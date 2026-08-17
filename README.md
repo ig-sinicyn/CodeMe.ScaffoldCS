@@ -1,2 +1,2 @@
 # CodeMe.ScaffoldCS
-Scaffolding platform inspired by CodegenCS
+Scaffolding framework inspired by CodegenCS

@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Description>Scaffolding framework inspired by CodegenCS</Description>
+		<PackageTags>Scaffolld;Template;Codegen;Code Generation</PackageTags>
+	</PropertyGroup>
+
+</Project>
