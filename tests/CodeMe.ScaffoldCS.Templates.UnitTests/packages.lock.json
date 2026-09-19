@@ -137,12 +137,6 @@
           "xunit.v3.runner.common": "[4.0.1]"
         }
       },
-      "codeme.scaffoldcs": {
-        "type": "Project",
-        "dependencies": {
-          "CodeMe.ScaffoldCS.Templates": "[1.0.0, )"
-        }
-      },
       "codeme.scaffoldcs.templates": {
         "type": "Project",
         "dependencies": {
