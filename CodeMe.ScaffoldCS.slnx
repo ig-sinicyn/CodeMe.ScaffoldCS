@@ -7,11 +7,12 @@
     <Project Path="env/env.csproj" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/CodeMe.ScaffoldCS.Metadata/CodeMe.ScaffoldCS.Metadata.csproj" />
     <Project Path="src/CodeMe.ScaffoldCS.Templates/CodeMe.ScaffoldCS.Templates.csproj" />
     <Project Path="src/CodeMe.ScaffoldCS/CodeMe.ScaffoldCS.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/CodeMe.ScaffoldCS.Templates.UnitTests/CodeMe.ScaffoldCS.Templates.UnitTests.csproj" Id="530fdd6f-e3f6-46b3-bdd8-110ee57c9ca7" />
+    <Project Path="tests/CodeMe.ScaffoldCS.Templates.UnitTests/CodeMe.ScaffoldCS.Templates.UnitTests.csproj" />
     <Project Path="tests/CodeMe.ScaffoldCS.UnitTests/CodeMe.ScaffoldCS.UnitTests.csproj" />
   </Folder>
 </Solution>
