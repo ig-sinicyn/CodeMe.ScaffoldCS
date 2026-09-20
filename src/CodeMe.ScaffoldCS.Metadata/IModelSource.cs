@@ -1,8 +1,6 @@
 ﻿namespace CodeMe.ScaffoldCS.Metadata;
 
-public interface IModelSource<out T>
+public interface IModelSource
 {
     public ValueTask LoadAsync(CancellationToken cancellation = default);
-
-    public T Source { get; }
 }

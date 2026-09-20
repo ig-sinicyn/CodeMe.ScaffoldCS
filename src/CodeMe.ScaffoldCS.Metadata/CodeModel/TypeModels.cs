@@ -2,11 +2,11 @@
 
 public readonly record struct TypeName(
     string Name,
-    string? Namespace);
+    string? Namespace = null);
 
 public record TypeInfo(
     TypeName TypeName,
-    TypeKind Kind,
+    TypeRole Role,
     bool IsNullable,
     IReadOnlyList<TypeInfo> GenericArgs)
 {
@@ -15,29 +15,29 @@ public record TypeInfo(
     public string? Namespace => TypeName.Namespace;
 }
 
-public enum TypeKind
+public enum TypeRole
 {
     Void,
 
     Primitive,
 
-    Entity,
-
     Collection,
 
-    Dictionary
+    Dictionary,
+
+    Dto
 }
 
-public record Entity(
+public record DtoModel(
     string Name,
     TypeName Type,
     string? Comment,
-    IReadOnlyList<EntityField> Fields);
+    IReadOnlyList<DtoField> Fields);
 
-public record EntityField(string Name, TypeInfo Type, string? Comment);
+public record DtoField(string Name, TypeInfo Type, string? Comment);
 
-public record EntityService(string Name, TypeInfo Type, string? Comment, IReadOnlyCollection<EntityMethod> Methods);
+public record ServiceModel(string Name, TypeInfo Type, string? Comment, IReadOnlyCollection<ServiceMethod> Methods);
 
-public record EntityMethod(string Name, TypeInfo ResultType, string? Comment, IReadOnlyList<EntityArg> Args);
+public record ServiceMethod(string Name, TypeInfo ResultType, string? Comment, IReadOnlyList<MethodArg> Args);
 
-public record EntityArg(string Name, TypeInfo Type, string? Comment);
+public record MethodArg(string Name, TypeInfo Type, string? Comment);
