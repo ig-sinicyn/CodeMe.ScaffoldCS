@@ -4,7 +4,7 @@ namespace CodeMe.ScaffoldCS.Metadata.CSharp;
 
 internal static class TypeDeclarationExtensions
 {
-    extension(TypeDeclarationSyntax type)
+    extension(BaseTypeDeclarationSyntax type)
     {
         public string Name => type.Identifier.ValueText;
 

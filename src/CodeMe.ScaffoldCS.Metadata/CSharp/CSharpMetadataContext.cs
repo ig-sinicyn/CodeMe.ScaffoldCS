@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace CodeMe.ScaffoldCS.Metadata.CSharp;
 
-public class CSharpMetadataContext : ModelSourceBase<CSharpCompilation>
+public class CSharpMetadataContext : ModelSourceBase<CSharpCompilation>, ICSharpMetadataContext
 {
     private readonly IFileAccessor _fileAccessor;
 
@@ -29,13 +29,37 @@ public class CSharpMetadataContext : ModelSourceBase<CSharpCompilation>
             .WithDocumentationMode(DocumentationMode.Parse);
 
         var syntaxTrees = new List<SyntaxTree>();
-        foreach (var fileName in options.SourceFileNames.Distinct())
+
+        var allSources = new HashSet<string>(options.SourceFiles.Comparer);
+        foreach (var fileName in options.SourceFileNames)
         {
             var path = _fileAccessor.ResolveFullPath(fileName);
+            if (!allSources.Add(path))
+            {
+                throw new InvalidOperationException($"Cannot add {fileName} file as it was used already");
+            }
+
             var syntaxTree = CSharpSyntaxTree.ParseText(
                 await File.ReadAllTextAsync(path, cancellation),
                 parseOptions,
-                path);
+                path,
+                cancellationToken: cancellation);
+            syntaxTrees.Add(syntaxTree);
+        }
+
+        foreach (var (fileName, content) in options.SourceFiles)
+        {
+            var path = _fileAccessor.ResolveFullPath(fileName);
+            if (!allSources.Add(path))
+            {
+                throw new InvalidOperationException($"Cannot add {fileName} file as it was used already");
+            }
+
+            var syntaxTree = CSharpSyntaxTree.ParseText(
+                content,
+                parseOptions,
+                path,
+                cancellationToken: cancellation);
             syntaxTrees.Add(syntaxTree);
         }
 
@@ -64,7 +88,7 @@ public class CSharpMetadataContext : ModelSourceBase<CSharpCompilation>
     {
         var path = _fileAccessor.ResolveFullPath(fileName);
 
-        var file = State.SyntaxTrees.First(x => x.FilePath.Equals(fileName));
+        var file = State.SyntaxTrees.First(x => x.FilePath.Equals(path));
         var type = CSharpMetadataParser.ResolveTargetType((CompilationUnitSyntax)file.GetRoot(), typeName);
 
         return CSharpMetadataParser.ParseDto(type, State);

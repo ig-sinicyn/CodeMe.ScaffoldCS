@@ -21,6 +21,8 @@ public enum TypeRole
 
     Primitive,
 
+    Enum,
+
     Collection,
 
     Dictionary,
@@ -29,10 +31,20 @@ public enum TypeRole
 }
 
 public record DtoModel(
-    string Name,
     TypeName Type,
+    TypeRole Role,
     string? Comment,
-    IReadOnlyList<DtoField> Fields);
+    IReadOnlyList<DtoField> Fields)
+{
+    public DtoModel(string name, string? namespaceName, string? comment, params DtoField[] fields)
+        : this(new TypeName(name, namespaceName), TypeRole.Dto, comment, fields)
+    {
+    }
+
+    public string Name => Type.Name;
+
+    public string? Namespace => Type.Namespace;
+}
 
 public record DtoField(string Name, TypeInfo Type, string? Comment);
 

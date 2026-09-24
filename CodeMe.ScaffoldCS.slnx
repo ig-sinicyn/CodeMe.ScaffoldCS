@@ -12,6 +12,7 @@
     <Project Path="src/CodeMe.ScaffoldCS/CodeMe.ScaffoldCS.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/CodeMe.ScaffoldCS.Metadata.UnitTests/CodeMe.ScaffoldCS.Metadata.UnitTests.csproj" Id="3b90bda6-ff24-4f40-8e73-a36c609d98ef" />
     <Project Path="tests/CodeMe.ScaffoldCS.Templates.UnitTests/CodeMe.ScaffoldCS.Templates.UnitTests.csproj" />
     <Project Path="tests/CodeMe.ScaffoldCS.UnitTests/CodeMe.ScaffoldCS.UnitTests.csproj" />
   </Folder>

@@ -4,9 +4,13 @@ namespace CodeMe.ScaffoldCS.Metadata.CSharp;
 
 public class CSharpMetadataContextOptions
 {
+    private static readonly StringComparer _pathComparer = StringComparer.OrdinalIgnoreCase;
+
     public LanguageVersion LanguageVersion { get; set; } = LanguageVersion.Preview;
 
-    public List<string> SourceFileNames { get; set; } = new();
+    public HashSet<string> SourceFileNames { get; set; } = new(_pathComparer);
 
-    public List<string> SourceReferences { get; set; } = new();
+    public Dictionary<string, string> SourceFiles { get; set; } = new(_pathComparer);
+
+    public HashSet<string> SourceReferences { get; set; } = new(_pathComparer);
 }
