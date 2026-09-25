@@ -3,6 +3,7 @@ using CodeMe.ScaffoldCS.Metadata.CodeModel;
 using CodeMe.ScaffoldCS.Metadata.CSharp;
 using CodeMe.ScaffoldCS.Metadata.UnitTests.Infrastructure;
 using T = CodeMe.ScaffoldCS.Metadata.CodeModel.WellKnownTypes;
+using static CodeMe.ScaffoldCS.Metadata.CodeModel.TypeInfo;
 
 namespace CodeMe.ScaffoldCS.Metadata.UnitTests;
 
@@ -42,16 +43,36 @@ public sealed class CSharpMetadataContextTests
             new DtoField("Value", T.Int32, "Value comment.")));
 
     [Fact]
-    public void DtoWithNullableGuidProperty_ShouldBeExpected() => Assert(
+    public void IInterfaceWithNullableGuidProperty_ShouldBeExpected() => Assert(
         new DtoModel(
-            "DtoWithNullableGuidProperty",
+            "IInterfaceWithNullableGuidProperty",
             "Tests",
             new DtoField("Value", T.Guid.ToNullable())));
 
     [Fact]
-    public void DtoWithNullableStringProperty_ShouldBeExpected() => Assert(
+    public void StructWithNullableStringProperty_ShouldBeExpected() => Assert(
         new DtoModel(
-            "DtoWithNullableStringProperty",
+            "StructWithNullableStringProperty",
             "Tests",
             new DtoField("Value", T.String.ToNullable())));
+
+    [Fact]
+    public void RecordWithEmptyDtoProperty_ShouldBeExpected() => Assert(
+        new DtoModel(
+            "RecordWithEmptyDtoProperty",
+            "Tests",
+            new DtoField("Value", Class("EmptyDto", "Tests"))));
+
+    [Fact]
+    public void Int32Enum_ShouldBeExpected() => Assert(
+        new DtoModel(
+            new TypeName("Int32Enum", "Tests"),
+            TypeRole.Enum,
+            "Enum comment.",
+            [
+                new DtoField("Normal", T.Int32, "Enum field comment")
+                {
+                    DefaultValue = 1
+                }
+            ]));
 }

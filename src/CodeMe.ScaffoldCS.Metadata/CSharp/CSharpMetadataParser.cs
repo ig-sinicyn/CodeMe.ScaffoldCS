@@ -53,14 +53,20 @@ internal static class CSharpMetadataParser
 
         var fields = declaration.Members
             .OfType<PropertyDeclarationSyntax>()
-            .Select(x => ParseDtoField(x, compilation))
-            .ToArray();
+            .Select(x => ParseDtoField(x, compilation));
+        if (declaration is RecordDeclarationSyntax { ParameterList: { } parameterList })
+        {
+            var parameters = parameterList.Parameters
+                .Select(x => ParseDtoField(x, compilation));
+
+            fields = parameters.Concat(fields);
+        }
 
         return new DtoModel(
             new TypeName(symbol.Name, symbol.Namespace),
             TypeRole.Dto,
             symbol.GetDocumentationSummary(),
-            fields);
+            fields.ToArray());
     }
 
     private static DtoModel ParseDto(EnumDeclarationSyntax declaration, CSharpCompilation compilation)
@@ -89,6 +95,24 @@ internal static class CSharpMetadataParser
         return new DtoField(
             symbol.Name,
             Resolve(declaration.Type, model),
+            symbol.GetDocumentationSummary());
+    }
+
+    public static DtoField ParseDtoField(
+        ParameterSyntax declaration,
+        CSharpCompilation compilation)
+    {
+        var model = compilation.GetSemanticModel(declaration.SyntaxTree);
+        var symbol = model.GetDeclaredSymbol(declaration)
+            ?? throw new InvalidOperationException(
+                $"Unable to resolve the target symbol '{declaration.Identifier}'.");
+        var type = declaration.Type
+            ?? throw new InvalidOperationException(
+                $"Unable to resolve the target symbol type '{declaration.Identifier}'.");
+
+        return new DtoField(
+            symbol.Name,
+            Resolve(type, model),
             symbol.GetDocumentationSummary());
     }
 

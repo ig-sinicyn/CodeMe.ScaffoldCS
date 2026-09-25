@@ -4,30 +4,58 @@
 namespace Tests;
 #pragma warning restore IDE0130
 
-internal class EmptyDto
+public class EmptyDto
 {
 }
 
 /// <summary>Here be comment.</summary>
-public class EmptyDtoWithComment
+internal class EmptyDtoWithComment
 {
 }
 
-/// <summary>Dto comment.</summary>
+/// <summary>
+/// Dto comment.
+/// </summary>
 public class DtoWithIntProperty
 {
     /// <summary>
     /// Value comment.
     /// </summary>
-    public int Value { get; set; }
+    public int Value { get; set; } = 12;
 }
 
-public class DtoWithNullableGuidProperty
+public interface IInterfaceWithNullableGuidProperty
 {
     public Guid? Value { get; set; }
 }
 
-public class DtoWithNullableStringProperty
+public struct StructWithNullableStringProperty
 {
     public string? Value => null;
+}
+
+public record RecordWithEmptyDtoProperty(EmptyDto Value);
+
+/// <summary>
+/// Enum comment.
+/// </summary>
+public enum Int32Enum
+{
+    /// <summary>
+    /// Enum field comment.
+    /// </summary>
+    Normal,
+
+    Value1,
+
+    Value2
+}
+
+public enum Int64Enum : long
+{
+    Normal,
+
+    Value1,
+
+    Value2
 }

@@ -1,21 +1,9 @@
-﻿namespace CodeMe.ScaffoldCS.Metadata.CodeModel;
+﻿using static CodeMe.ScaffoldCS.Metadata.CodeModel.TypeInfo;
+
+namespace CodeMe.ScaffoldCS.Metadata.CodeModel;
 
 public static class WellKnownTypes
 {
-    private static TypeInfo Primitive(string name) =>
-        new(
-            TypeName: new TypeName(name),
-            Role: TypeRole.Primitive,
-            IsNullable: false,
-            []);
-
-    private static TypeInfo SystemPrimitive(string name, string? namespaceName = null) =>
-        new(
-            TypeName: new TypeName(name, namespaceName ?? "System"),
-            Role: TypeRole.Primitive,
-            IsNullable: false,
-            []);
-
     public static readonly TypeInfo Boolean = Primitive("bool");
 
     public static readonly TypeInfo Byte = Primitive("byte");

@@ -31,5 +31,7 @@ Delayed:
 
 # Metamodel issues
 
+* Metadata accessibility modifiers
+* Metadata default values
 * Implicit usings + using declarations for type aliases.
 * ToString methods to ease metadata model append

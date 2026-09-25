@@ -13,6 +13,27 @@ public record TypeInfo(
     bool IsNullable,
     IReadOnlyList<TypeInfo> GenericArgs)
 {
+    public static TypeInfo Primitive(string name) =>
+        new(
+            TypeName: new TypeName(name),
+            Role: TypeRole.Primitive,
+            IsNullable: false,
+            []);
+
+    internal static TypeInfo SystemPrimitive(string name, string? namespaceName = null) =>
+        new(
+            TypeName: new TypeName(name, namespaceName ?? "System"),
+            Role: TypeRole.Primitive,
+            IsNullable: false,
+            []);
+
+    public static TypeInfo Class(string name, string? namespaceName) =>
+        new(
+            TypeName: new TypeName(name, namespaceName),
+            Role: TypeRole.Dto,
+            IsNullable: false,
+            []);
+
     public string Name => TypeName.Name;
 
     public string? Namespace => TypeName.Namespace;
@@ -60,6 +81,8 @@ public record DtoModel(
 
 public record DtoField(string Name, TypeInfo Type, string? Comment = null)
 {
+    public object? DefaultValue { get; init; }
+
     public override string ToString() => $"{Type} {Name}";
 }
 
@@ -94,5 +117,7 @@ public record ServiceMethod(string Name, TypeInfo ResultType, string? Comment, I
 
 public record MethodArg(string Name, TypeInfo Type, string? Comment = null)
 {
+    public object? DefaultValue { get; init; }
+
     public override string ToString() => $"{Type} {Name}";
 }
