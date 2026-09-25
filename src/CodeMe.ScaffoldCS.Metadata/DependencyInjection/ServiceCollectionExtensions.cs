@@ -1,4 +1,5 @@
-﻿using CodeMe.ScaffoldCS.Metadata.CSharp;
+﻿using System.Reflection;
+using CodeMe.ScaffoldCS.Metadata.CSharp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -66,6 +67,24 @@ public static class ServiceCollectionExtensions
         return modelBuilder;
     }
 
+    public static IModelSourcesBuilder AddCSharpReference(
+        this IModelSourcesBuilder modelBuilder,
+        Type assemblyType) => modelBuilder.AddCSharpReference(assemblyType.Assembly.Location);
+
+    public static IModelSourcesBuilder AddCSharpReference(
+        this IModelSourcesBuilder modelBuilder,
+        Assembly assembly) => modelBuilder.AddCSharpReference(assembly.Location);
+
+    public static IModelSourcesBuilder AddCSharpReference(
+        this IModelSourcesBuilder modelBuilder,
+        string assemblyPath)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(assemblyPath);
+
+        modelBuilder.Services.ConfigureCSharpSourceContext(opt => opt.SourceReferences.Add(assemblyPath));
+        return modelBuilder;
+    }
+
     private static IServiceCollection AddCSharpSourceContext(
         this IServiceCollection services,
         Action<CSharpMetadataContextOptions>? configure = null)
@@ -84,6 +103,15 @@ public static class ServiceCollectionExtensions
         {
             optionsBuilder.Configure(configure);
         }
+
+        return services;
+    }
+
+    private static IServiceCollection ConfigureCSharpSourceContext(
+        this IServiceCollection services,
+        Action<CSharpMetadataContextOptions> configure)
+    {
+        services.AddOptions<CSharpMetadataContextOptions>().Configure(configure);
 
         return services;
     }

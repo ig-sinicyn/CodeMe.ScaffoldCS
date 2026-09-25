@@ -79,11 +79,6 @@ public class CSharpMetadataContext : ModelSourceBase<CSharpCompilation>, ICSharp
         return compilation;
     }
 
-    public static readonly CSharpParseOptions LatestLanguageParseOptions =
-        CSharpParseOptions.Default
-            .WithLanguageVersion(LanguageVersion.Preview)
-            .WithDocumentationMode(DocumentationMode.Parse);
-
     public DtoModel GetDto(string fileName, string typeName)
     {
         var path = _fileAccessor.ResolveFullPath(fileName);

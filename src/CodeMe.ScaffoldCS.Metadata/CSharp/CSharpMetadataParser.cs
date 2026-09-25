@@ -1,6 +1,4 @@
-﻿using System.Xml;
-using System.Xml.Linq;
-using CodeMe.ScaffoldCS.Metadata.CodeModel;
+﻿using CodeMe.ScaffoldCS.Metadata.CodeModel;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -18,6 +16,8 @@ internal static class CSharpMetadataParser
                 type => type is RecordDeclarationSyntax
                     or ClassDeclarationSyntax
                     or InterfaceDeclarationSyntax
+                    or RecordDeclarationSyntax
+                    or StructDeclarationSyntax
                     or EnumDeclarationSyntax)
             .ToArray();
 
@@ -32,6 +32,7 @@ internal static class CSharpMetadataParser
         }
 
         return candidates.FirstOrDefault(type => type.NameMatches(typeName))
+            ?? candidates.FirstOrDefault(type => type.FullNameMatches(typeName))
             ?? throw new InvalidOperationException($"No class or interface named '{typeName}' was found in the file.");
     }
 
@@ -169,7 +170,7 @@ internal static class CSharpMetadataParser
             if (IsPrimitive(namedTypeSymbol))
             {
                 return new TypeInfo(
-                    typeName,
+                    new TypeName(SymbolDisplay.ToDisplayString(namedTypeSymbol)),
                     TypeRole.Primitive,
                     isNullable,
                     []);
@@ -203,6 +204,7 @@ internal static class CSharpMetadataParser
     private static bool IsPrimitive(INamedTypeSymbol typeSymbol)
     {
         if (typeSymbol.SpecialType is
+            SpecialType.System_Void or
             SpecialType.System_Boolean or
             SpecialType.System_Byte or
             SpecialType.System_SByte or
@@ -221,44 +223,17 @@ internal static class CSharpMetadataParser
             return true;
         }
 
-        return typeSymbol.ToDisplayString() is "System.DateTime"
-            or "System.DateOnly"
-            or "System.TimeOnly"
-            or "System.TimeSpan"
-            or "System.Guid";
-    }
-}
-
-internal static class CSharpSymbolExtensions
-{
-    extension(ITypeSymbol symbol)
-    {
-        public string? Namespace =>
-            symbol.ContainingNamespace is { IsGlobalNamespace: false } ns
-                ? ns.ToDisplayString()
-                : null;
-    }
-
-    extension(ISymbol symbol)
-    {
-        public string? GetDocumentationSummary() => GetSummaryFromXml(symbol.GetDocumentationCommentXml());
-    }
-
-    private static string? GetSummaryFromXml(string? documentationComment)
-    {
-        if (string.IsNullOrEmpty(documentationComment))
-        {
-            return null;
-        }
-
-        try
-        {
-            var xmlDoc = XDocument.Parse(documentationComment);
-            return xmlDoc.Descendants("summary").FirstOrDefault()?.Value.Trim();
-        }
-        catch (XmlException)
-        {
-            return null;
-        }
+        return typeSymbol.ToDisplayString()
+            is "DateTime"
+            or "DateOnly"
+            or "DateTimeOffset"
+            or "TimeOnly"
+            or "TimeSpan"
+            or "Guid"
+            or "Index"
+            or "Range"
+            or "Half"
+            or "System.Numerics.BigInteger"
+            or "System.Numerics.Complex";
     }
 }

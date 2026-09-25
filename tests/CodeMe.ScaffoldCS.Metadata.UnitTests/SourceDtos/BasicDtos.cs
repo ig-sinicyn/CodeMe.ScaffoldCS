@@ -21,3 +21,13 @@ public class DtoWithIntProperty
     /// </summary>
     public int Value { get; set; }
 }
+
+public class DtoWithNullableGuidProperty
+{
+    public Guid? Value { get; set; }
+}
+
+public class DtoWithNullableStringProperty
+{
+    public string? Value => null;
+}

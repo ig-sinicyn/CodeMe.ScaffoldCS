@@ -2,6 +2,7 @@
 using CodeMe.ScaffoldCS.Metadata.CodeModel;
 using CodeMe.ScaffoldCS.Metadata.CSharp;
 using CodeMe.ScaffoldCS.Metadata.UnitTests.Infrastructure;
+using T = CodeMe.ScaffoldCS.Metadata.CodeModel.WellKnownTypes;
 
 namespace CodeMe.ScaffoldCS.Metadata.UnitTests;
 
@@ -38,5 +39,19 @@ public sealed class CSharpMetadataContextTests
             "DtoWithIntProperty",
             "Tests",
             "Dto comment.",
-            new DtoField("Value", null!, "Value comment.")));
+            new DtoField("Value", T.Int32, "Value comment.")));
+
+    [Fact]
+    public void DtoWithNullableGuidProperty_ShouldBeExpected() => Assert(
+        new DtoModel(
+            "DtoWithNullableGuidProperty",
+            "Tests",
+            new DtoField("Value", T.Guid.ToNullable())));
+
+    [Fact]
+    public void DtoWithNullableStringProperty_ShouldBeExpected() => Assert(
+        new DtoModel(
+            "DtoWithNullableStringProperty",
+            "Tests",
+            new DtoField("Value", T.String.ToNullable())));
 }

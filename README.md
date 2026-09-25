@@ -30,3 +30,6 @@ Delayed:
 * No XML comments
 
 # Metamodel issues
+
+* Implicit usings + using declarations for type aliases.
+* ToString methods to ease metadata model append

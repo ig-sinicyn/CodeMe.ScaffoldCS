@@ -17,7 +17,7 @@ internal static class TypeDeclarationExtensions
             return result.Length == 0 ? null : result;
         }
 
-        public string? GetFullName()
+        public string GetFullName()
         {
             var namespaceName = type.GetNamespace();
 
