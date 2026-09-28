@@ -35,12 +35,25 @@ public sealed class CSharpMetadataContextTests
         new DtoModel("EmptyDtoWithComment", "Tests", "Here be comment."));
 
     [Fact]
-    public void DtoWithIntProperty_ShouldBeExpected() => Assert(
+    public void DtoWithInt32Property_ShouldBeExpected() => Assert(
         new DtoModel(
-            "DtoWithIntProperty",
+            "DtoWithInt32Property",
             "Tests",
             "Dto comment.",
-            new DtoField("Value", T.Int32, "Value comment.")));
+            new DtoField("Value", T.Int32, "Value comment.")
+            {
+                DefaultValue = 12
+            }));
+
+    [Fact]
+    public void DtoWithInitializedGuidProperty_ShouldBeExpected() => Assert(
+        new DtoModel(
+            "DtoWithInitializedGuidProperty",
+            "Tests",
+            new DtoField("Value", T.Guid)
+            {
+                DefaultValue = new DtoFieldInitializer("Guid.NewGuid()")
+            }));
 
     [Fact]
     public void IInterfaceWithNullableGuidProperty_ShouldBeExpected() => Assert(
@@ -64,15 +77,54 @@ public sealed class CSharpMetadataContextTests
             new DtoField("Value", Class("EmptyDto", "Tests"))));
 
     [Fact]
+    public void RecordWithInitializedStringProperty_ShouldBeExpected() => Assert(
+        new DtoModel(
+            "RecordWithInitializedStringProperty",
+            "Tests",
+            new DtoField("Value", T.String)
+            {
+                DefaultValue = "Hello there!"
+            }));
+
+    [Fact]
     public void Int32Enum_ShouldBeExpected() => Assert(
         new DtoModel(
             new TypeName("Int32Enum", "Tests"),
             TypeRole.Enum,
             "Enum comment.",
             [
-                new DtoField("Normal", T.Int32, "Enum field comment")
+                new DtoField("Normal", T.Int32, "Enum field comment.")
+                {
+                    DefaultValue = 0
+                },
+                new DtoField("Value1", T.Int32)
                 {
                     DefaultValue = 1
+                },
+                new DtoField("Value2", T.Int32)
+                {
+                    DefaultValue = 2
+                }
+            ]));
+
+    [Fact]
+    public void Int64Enum_ShouldBeExpected() => Assert(
+        new DtoModel(
+            new TypeName("Int64Enum", "Tests"),
+            TypeRole.Enum,
+            null,
+            [
+                new DtoField("Normal", T.Int64)
+                {
+                    DefaultValue = 0
+                },
+                new DtoField("Value2", T.Int64)
+                {
+                    DefaultValue = 2
+                },
+                new DtoField("Value3", T.Int64)
+                {
+                    DefaultValue = 3
                 }
             ]));
 }

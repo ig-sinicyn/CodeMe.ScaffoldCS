@@ -86,6 +86,8 @@ public record DtoField(string Name, TypeInfo Type, string? Comment = null)
     public override string ToString() => $"{Type} {Name}";
 }
 
+public record DtoFieldInitializer(string Initializer);
+
 public record ServiceModel(TypeName TypeName, string? Comment, IReadOnlyCollection<ServiceMethod> Methods)
 {
     public ServiceModel(string name, string? namespaceName, string? comment, params ServiceMethod[] methods)

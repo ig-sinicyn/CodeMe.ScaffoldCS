@@ -1,0 +1,1 @@
+﻿namespace CodeMe.ScaffoldCS.Metadata.CSharp;

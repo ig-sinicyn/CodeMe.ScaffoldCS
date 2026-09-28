@@ -16,12 +16,17 @@ internal class EmptyDtoWithComment
 /// <summary>
 /// Dto comment.
 /// </summary>
-public class DtoWithIntProperty
+public class DtoWithInt32Property
 {
     /// <summary>
     /// Value comment.
     /// </summary>
     public int Value { get; set; } = 12;
+}
+
+public class DtoWithInitializedGuidProperty
+{
+    public Guid Value { get; set; } = Guid.NewGuid();
 }
 
 public interface IInterfaceWithNullableGuidProperty
@@ -35,6 +40,8 @@ public struct StructWithNullableStringProperty
 }
 
 public record RecordWithEmptyDtoProperty(EmptyDto Value);
+
+public record RecordWithInitializedStringProperty(string Value = "Hello there!");
 
 /// <summary>
 /// Enum comment.
@@ -53,9 +60,9 @@ public enum Int32Enum
 
 public enum Int64Enum : long
 {
-    Normal,
+    Normal = 0,
 
-    Value1,
+    Value2 = 2,
 
-    Value2
+    Value3
 }

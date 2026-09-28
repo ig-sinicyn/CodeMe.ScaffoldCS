@@ -76,11 +76,17 @@ internal static class CSharpMetadataParser
             ?? throw new InvalidOperationException(
                 $"Unable to resolve the target type '{declaration.Name}'.");
 
+        var underlyingType = symbol.EnumUnderlyingType == null
+            ? TypeInfo.Primitive("int")
+            : Resolve(symbol.EnumUnderlyingType, false);
+        var fields = declaration.Members
+            .Select(x => ParseDtoField(x, underlyingType, compilation));
+
         return new DtoModel(
             new TypeName(symbol.Name, symbol.Namespace),
             TypeRole.Enum,
             symbol.GetDocumentationSummary(),
-            []);
+            fields.ToArray());
     }
 
     public static DtoField ParseDtoField(
@@ -92,10 +98,22 @@ internal static class CSharpMetadataParser
             ?? throw new InvalidOperationException(
                 $"Unable to resolve the target symbol '{declaration.Identifier}'.");
 
+        var initializer = declaration.Initializer?.Value;
+        var constantValue = initializer switch
+        {
+            null => null,
+            _ when model.GetConstantValue(initializer) is { HasValue: true } x =>
+                x.Value,
+            _ => new DtoFieldInitializer(initializer.ToString())
+        };
+
         return new DtoField(
             symbol.Name,
             Resolve(declaration.Type, model),
-            symbol.GetDocumentationSummary());
+            symbol.GetDocumentationSummary())
+        {
+            DefaultValue = constantValue
+        };
     }
 
     public static DtoField ParseDtoField(
@@ -113,11 +131,15 @@ internal static class CSharpMetadataParser
         return new DtoField(
             symbol.Name,
             Resolve(type, model),
-            symbol.GetDocumentationSummary());
+            symbol.GetDocumentationSummary())
+        {
+            DefaultValue = symbol.HasExplicitDefaultValue ? symbol.ExplicitDefaultValue : null
+        };
     }
 
     public static DtoField ParseDtoField(
-        EnumDeclarationSyntax declaration,
+        EnumMemberDeclarationSyntax declaration,
+        TypeInfo underlyingType,
         CSharpCompilation compilation)
     {
         var model = compilation.GetSemanticModel(declaration.SyntaxTree);
@@ -125,14 +147,13 @@ internal static class CSharpMetadataParser
             ?? throw new InvalidOperationException(
                 $"Unable to resolve the target symbol '{declaration.Identifier}'.");
 
-        var underlyingEnumType =
-            declaration.BaseList?.Types.FirstOrDefault()?.ToString()
-            ?? "int";
-
         return new DtoField(
             symbol.Name,
-            Resolve(null!, model),
-            symbol.GetDocumentationSummary());
+            underlyingType,
+            symbol.GetDocumentationSummary())
+        {
+            DefaultValue = symbol.ConstantValue
+        };
     }
 
     private static TypeInfo Resolve(TypeSyntax typeSyntax, SemanticModel semanticModel)
