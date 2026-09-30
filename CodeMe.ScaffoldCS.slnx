@@ -6,6 +6,11 @@
     <Project Path="cicd/cicd.csproj" />
     <Project Path="env/env.csproj" />
   </Folder>
+  <Folder Name="/Examples/">
+    <Project Path="examples/SampleApps.Desired/SampleApps.Desired.csproj" Id="f1503dd6-64bd-44f2-a002-3bbbcce9e343" />
+    <Project Path="examples/SampleApps.Scaffolded/SampleApps.Scaffolded.csproj" Id="a7cebe2b-4e82-4949-9f05-b4f52bc5835f" />
+    <Project Path="examples/SampleTemplates/SampleTemplates.csproj" Id="a516a92e-137b-479f-94ca-2546021160cd" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/CodeMe.ScaffoldCS.Metadata/CodeMe.ScaffoldCS.Metadata.csproj" />
     <Project Path="src/CodeMe.ScaffoldCS.Templates/CodeMe.ScaffoldCS.Templates.csproj" />
