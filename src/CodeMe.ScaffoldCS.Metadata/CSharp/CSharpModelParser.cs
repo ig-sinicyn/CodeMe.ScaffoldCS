@@ -6,7 +6,7 @@ using TypeInfo = CodeMe.ScaffoldCS.Metadata.CodeModel.TypeInfo;
 
 namespace CodeMe.ScaffoldCS.Metadata.CSharp;
 
-internal static class CSharpMetadataParser
+internal static class CSharpModelParser
 {
     public static BaseTypeDeclarationSyntax? ResolveTargetTypeOrDefault(CompilationUnitSyntax root, string? typeName)
     {
@@ -35,17 +35,17 @@ internal static class CSharpMetadataParser
             ?? candidates.FirstOrDefault(type => type.FullNameMatches(typeName));
     }
 
+    public static BaseTypeDeclarationSyntax ResolveTargetType(CompilationUnitSyntax root, string? typeName) =>
+        ResolveTargetTypeOrDefault(root, typeName)
+        ?? throw new InvalidOperationException(
+            $"Unable to resolve the target type '{typeName}'.");
+
     public static BaseTypeDeclarationSyntax ResolveTargetType(
         IEnumerable<CompilationUnitSyntax> roots,
         string? typeName) =>
         roots
             .Select(x => ResolveTargetTypeOrDefault(x, typeName))
             .FirstOrDefault(x => x != null)
-        ?? throw new InvalidOperationException(
-            $"Unable to resolve the target type '{typeName}'.");
-
-    public static BaseTypeDeclarationSyntax ResolveTargetType(CompilationUnitSyntax root, string? typeName) =>
-        ResolveTargetTypeOrDefault(root, typeName)
         ?? throw new InvalidOperationException(
             $"Unable to resolve the target type '{typeName}'.");
 
@@ -102,7 +102,7 @@ internal static class CSharpMetadataParser
             fields.ToArray());
     }
 
-    public static DtoField ParseDtoField(
+    private static DtoField ParseDtoField(
         PropertyDeclarationSyntax declaration,
         CSharpCompilation compilation)
     {
@@ -129,7 +129,7 @@ internal static class CSharpMetadataParser
         };
     }
 
-    public static DtoField ParseDtoField(
+    private static DtoField ParseDtoField(
         ParameterSyntax declaration,
         CSharpCompilation compilation)
     {
@@ -150,7 +150,7 @@ internal static class CSharpMetadataParser
         };
     }
 
-    public static DtoField ParseDtoField(
+    private static DtoField ParseDtoField(
         EnumMemberDeclarationSyntax declaration,
         TypeInfo underlyingType,
         CSharpCompilation compilation)

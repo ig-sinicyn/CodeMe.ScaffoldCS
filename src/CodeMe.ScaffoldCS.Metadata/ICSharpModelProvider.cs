@@ -2,7 +2,7 @@
 
 namespace CodeMe.ScaffoldCS.Metadata;
 
-public interface ICSharpMetadataProvider
+public interface ICSharpModelProvider
 {
     DtoModel GetDto(string typeName);
 

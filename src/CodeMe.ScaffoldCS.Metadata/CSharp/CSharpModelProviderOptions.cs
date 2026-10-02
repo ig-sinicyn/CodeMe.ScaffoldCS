@@ -2,7 +2,7 @@
 
 namespace CodeMe.ScaffoldCS.Metadata.CSharp;
 
-public class CSharpMetadataProviderOptions
+public class CSharpModelProviderOptions
 {
     private static readonly StringComparer _pathComparer = StringComparer.OrdinalIgnoreCase;
 

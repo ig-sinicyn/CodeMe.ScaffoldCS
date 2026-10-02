@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace CodeMe.ScaffoldCS.Hosting;
+namespace CodeMe.ScaffoldCS.Internals;
 
 internal sealed partial class ModelLoaderBackgroundService(
     IEnumerable<IModelSource> sources,

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using CodeMe.ScaffoldCS.DependencyInjection;
+using CodeMe.ScaffoldCS.Internals;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -12,7 +13,7 @@ public static class ScaffoldHost
         CancellationToken cancellation = default)
     {
         var host = BuildHost(startup, options);
-        return await RunHost(host, cancellation);
+        return await RunHostAsync(host, cancellation);
     }
 
     private static IHost BuildHost(Type startup, ScaffoldHostOptions options)
@@ -39,17 +40,11 @@ public static class ScaffoldHost
         return host;
     }
 
-    private static void AddScaffoldServices(this IServiceCollection services)
-    {
-        services.AddHostedService<ModelLoaderBackgroundService>();
-        services.AddSingleton<ScaffoldRenderService>();
-    }
-
-    private static async Task<int> RunHost(IHost host, CancellationToken cancellation)
+    private static async Task<int> RunHostAsync(IHost host, CancellationToken cancellation)
     {
         await host.StartAsync(cancellation);
 
-        var render = host.Services.GetRequiredService<ScaffoldRenderService>();
+        var render = host.Services.GetRequiredService<ScaffoldService>();
 
         await render.RenderAsync(cancellation);
 

@@ -1,4 +1,4 @@
-﻿namespace SampleApps.Desired.Contracts;
+﻿namespace SampleApps.Desired.Accounts;
 
 /// <summary>
 /// Account details.

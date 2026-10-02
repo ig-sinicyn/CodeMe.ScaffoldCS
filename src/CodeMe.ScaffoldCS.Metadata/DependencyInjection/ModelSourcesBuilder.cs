@@ -2,7 +2,7 @@
 
 namespace CodeMe.ScaffoldCS.Metadata.DependencyInjection;
 
-public class ModelSourcesBuilder(IServiceCollection services) : IModelSourcesBuilder
+public class ModelSourcesBuilder(IServiceCollection services)
 {
     public IServiceCollection Services => services;
 

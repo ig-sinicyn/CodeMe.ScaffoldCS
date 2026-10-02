@@ -7,11 +7,11 @@ using static CodeMe.ScaffoldCS.Metadata.CodeModel.TypeInfo;
 namespace CodeMe.ScaffoldCS.Metadata.UnitTests;
 
 [Collection(nameof(CSharpMetadataCollection))]
-public sealed class CSharpMetadataProviderTests
+public sealed class CSharpModelProviderTests
 {
     private readonly ICSharpMetadataProvider _metadataProvider;
 
-    public CSharpMetadataProviderTests(CSharpMetadataFixture fixture)
+    public CSharpModelProviderTests(CSharpMetadataFixture fixture)
     {
         _metadataProvider = fixture.MetadataProvider;
     }

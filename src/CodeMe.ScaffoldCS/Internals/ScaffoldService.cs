@@ -1,12 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace CodeMe.ScaffoldCS.Hosting;
+namespace CodeMe.ScaffoldCS.Internals;
 
-internal sealed partial class ScaffoldRenderService(
+internal sealed partial class ScaffoldService(
     IEnumerable<IScaffoldPart> parts,
-    ILogger<ModelLoaderBackgroundService> logger)
+    ILogger<ScaffoldService> logger) : IScaffoldService
 {
-    public async Task RenderAsync(CancellationToken cancellation = default)
+    public async ValueTask RenderAsync(CancellationToken cancellation = default)
     {
         var partsToRender = parts.ToList();
         if (partsToRender.Count == 0)

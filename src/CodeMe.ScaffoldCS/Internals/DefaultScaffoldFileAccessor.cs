@@ -1,24 +1,24 @@
 ﻿using Microsoft.Extensions.Options;
 
-namespace CodeMe.ScaffoldCS.Metadata.Internals;
+namespace CodeMe.ScaffoldCS.Internals;
 
-public class DefaultModelFileAccessor : IModelFileAccessor, IDisposable
+public class DefaultScaffoldFileAccessor : IScaffoldFileAccessor, IDisposable
 {
     private readonly IDisposable? _optionsSubscription;
 
     private string? _basePath;
 
-    public DefaultModelFileAccessor(IOptionsMonitor<ModelFileAccessorOptions> options)
+    public DefaultScaffoldFileAccessor(IOptionsMonitor<ScaffoldOptions> options)
     {
-        _basePath = options.CurrentValue.BasePath == null
+        _basePath = options.CurrentValue.OutputPath == null
             ? null
-            : Path.GetFullPath(options.CurrentValue.BasePath);
+            : Path.GetFullPath(options.CurrentValue.OutputPath);
         _optionsSubscription = options.OnChange(
             opt =>
             {
-                _basePath = opt.BasePath == null
+                _basePath = opt.OutputPath == null
                     ? null
-                    : Path.GetFullPath(opt.BasePath);
+                    : Path.GetFullPath(opt.OutputPath);
             });
     }
 

@@ -3,18 +3,25 @@ using CodeMe.ScaffoldCS.Metadata.CSharp;
 using CodeMe.ScaffoldCS.Metadata.Internals;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace CodeMe.ScaffoldCS.Metadata.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-    public static IModelSourcesBuilder AddModelSources(
+    public static ModelSourcesBuilder AddModelSources(
         this IServiceCollection services,
-        string? rootDictionary = null)
+        string? basePath = null)
     {
         services.AddModelFileAccessor();
-        return new ModelSourcesBuilder(services)
-            .SetBasePath(rootDictionary);
+
+        var builder = new ModelSourcesBuilder(services);
+        if (!string.IsNullOrEmpty(basePath))
+        {
+            builder.SetBasePath(basePath);
+        }
+
+        return builder;
     }
 
     private static IServiceCollection AddModelFileAccessor(this IServiceCollection services)
@@ -25,39 +32,39 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IModelSourcesBuilder SetBasePath(this IModelSourcesBuilder modelBuilder, string? path)
+    public static ModelSourcesBuilder SetBasePath(this ModelSourcesBuilder modelBuilder, string? path)
     {
         modelBuilder.Services.AddOptions<ModelFileAccessorOptions>().Configure(opt => opt.BasePath = path);
         return modelBuilder;
     }
 
-    public static IModelSourcesBuilder AddCSharpSource(this IModelSourcesBuilder modelBuilder, string filename)
+    public static ModelSourcesBuilder AddCSharpSource(this ModelSourcesBuilder modelBuilder, string filename)
     {
         ArgumentException.ThrowIfNullOrEmpty(filename);
 
-        modelBuilder.Services.AddCSharpSourceContext(opt => opt.SourceFileNames.Add(filename));
+        modelBuilder.Services.AddCSharpModelProvider(opt => opt.SourceFileNames.Add(filename));
         return modelBuilder;
     }
 
-    public static IModelSourcesBuilder AddCSharpSource(
-        this IModelSourcesBuilder modelBuilder,
+    public static ModelSourcesBuilder AddCSharpSource(
+        this ModelSourcesBuilder modelBuilder,
         string filename,
         string content)
     {
         ArgumentException.ThrowIfNullOrEmpty(filename);
         ArgumentException.ThrowIfNullOrEmpty(content);
 
-        modelBuilder.Services.AddCSharpSourceContext(opt => opt.SourceFiles.Add(filename, content));
+        modelBuilder.Services.AddCSharpModelProvider(opt => opt.SourceFiles.Add(filename, content));
         return modelBuilder;
     }
 
-    public static IModelSourcesBuilder AddCSharpSources(
-        this IModelSourcesBuilder modelBuilder,
+    public static ModelSourcesBuilder AddCSharpSources(
+        this ModelSourcesBuilder modelBuilder,
         IReadOnlyDictionary<string, string> sourceFiles)
     {
         ArgumentNullException.ThrowIfNull(sourceFiles);
 
-        modelBuilder.Services.AddCSharpSourceContext(
+        modelBuilder.Services.AddCSharpModelProvider(
             opt =>
             {
                 foreach (var (fileName, content) in sourceFiles)
@@ -68,36 +75,34 @@ public static class ServiceCollectionExtensions
         return modelBuilder;
     }
 
-    public static IModelSourcesBuilder AddCSharpReference(
-        this IModelSourcesBuilder modelBuilder,
-        Type assemblyType) => modelBuilder.AddCSharpReference(assemblyType.Assembly.Location);
+    public static ModelSourcesBuilder AddCSharpReference(this ModelSourcesBuilder modelBuilder, Type assemblyType) =>
+        modelBuilder.AddCSharpReference(assemblyType.Assembly.Location);
 
-    public static IModelSourcesBuilder AddCSharpReference(
-        this IModelSourcesBuilder modelBuilder,
-        Assembly assembly) => modelBuilder.AddCSharpReference(assembly.Location);
+    public static ModelSourcesBuilder AddCSharpReference(this ModelSourcesBuilder modelBuilder, Assembly assembly) =>
+        modelBuilder.AddCSharpReference(assembly.Location);
 
-    public static IModelSourcesBuilder AddCSharpReference(
-        this IModelSourcesBuilder modelBuilder,
+    public static ModelSourcesBuilder AddCSharpReference(
+        this ModelSourcesBuilder modelBuilder,
         string assemblyPath)
     {
         ArgumentException.ThrowIfNullOrEmpty(assemblyPath);
 
-        modelBuilder.Services.ConfigureCSharpSourceContext(opt => opt.SourceReferences.Add(assemblyPath));
+        modelBuilder.Services.ConfigureCSharpModelProvider(opt => opt.SourceReferences.Add(assemblyPath));
         return modelBuilder;
     }
 
-    private static IServiceCollection AddCSharpSourceContext(
+    private static IServiceCollection AddCSharpModelProvider(
         this IServiceCollection services,
-        Action<CSharpMetadataProviderOptions>? configure = null)
+        Action<CSharpModelProviderOptions>? configure = null)
     {
-        var optionsBuilder = services.AddOptions<CSharpMetadataProviderOptions>();
+        var optionsBuilder = services.AddOptions<CSharpModelProviderOptions>();
 
         var oldCount = services.Count;
-        services.TryAddSingleton<ICSharpMetadataProvider, CSharpMetadataProvider>();
+        services.TryAddSingleton<ICSharpModelProvider, CSharpModelProvider>();
         if (services.Count > oldCount)
         {
             services.AddSingleton<IModelSource>(
-                provider => (IModelSource)provider.GetRequiredService<ICSharpMetadataProvider>());
+                provider => (IModelSource)provider.GetRequiredService<ICSharpModelProvider>());
         }
 
         if (configure != null)
@@ -108,11 +113,11 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static IServiceCollection ConfigureCSharpSourceContext(
+    private static IServiceCollection ConfigureCSharpModelProvider(
         this IServiceCollection services,
-        Action<CSharpMetadataProviderOptions> configure)
+        Action<CSharpModelProviderOptions> configure)
     {
-        services.AddOptions<CSharpMetadataProviderOptions>().Configure(configure);
+        services.AddOptions<CSharpModelProviderOptions>().Configure(configure);
 
         return services;
     }

@@ -2,5 +2,5 @@
 
 public interface IScaffoldPart
 {
-    Task RenderAsync(CancellationToken cancellation = default);
+    ValueTask RenderAsync(IScaffoldContext context, CancellationToken cancellation = default);
 }
