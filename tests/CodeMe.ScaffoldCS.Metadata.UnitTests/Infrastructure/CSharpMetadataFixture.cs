@@ -1,5 +1,4 @@
-﻿using CodeMe.ScaffoldCS.Metadata.CSharp;
-using CodeMe.ScaffoldCS.Metadata.DependencyInjection;
+﻿using CodeMe.ScaffoldCS.Metadata.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CodeMe.ScaffoldCS.Metadata.UnitTests.Infrastructure;
@@ -16,10 +15,10 @@ public class CSharpMetadataFixture : IAsyncLifetime
             .AddCSharpSource(WellKnownTestClasses.BasicDtos);
 
         _services = services.BuildServiceProvider();
-        MetadataContext = _services.GetRequiredService<ICSharpMetadataContext>();
+        MetadataProvider = _services.GetRequiredService<ICSharpMetadataProvider>();
     }
 
-    public ICSharpMetadataContext MetadataContext { get; }
+    public ICSharpMetadataProvider MetadataProvider { get; }
 
     public async ValueTask InitializeAsync()
     {

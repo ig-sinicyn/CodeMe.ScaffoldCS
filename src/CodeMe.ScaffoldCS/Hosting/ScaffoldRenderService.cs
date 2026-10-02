@@ -4,7 +4,7 @@ namespace CodeMe.ScaffoldCS.Hosting;
 
 internal sealed partial class ScaffoldRenderService(
     IEnumerable<IScaffoldPart> parts,
-    ILogger<MetadataBackgroundService> logger)
+    ILogger<ModelLoaderBackgroundService> logger)
 {
     public async Task RenderAsync(CancellationToken cancellation = default)
     {

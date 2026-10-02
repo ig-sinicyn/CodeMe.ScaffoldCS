@@ -1,6 +1,6 @@
 ﻿namespace CodeMe.ScaffoldCS.Metadata;
 
-public interface IFileAccessor
+public interface IModelFileAccessor
 {
     public string ResolveFullPath(string path);
 }

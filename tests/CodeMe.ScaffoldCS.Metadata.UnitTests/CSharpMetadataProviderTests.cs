@@ -1,6 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
 using CodeMe.ScaffoldCS.Metadata.CodeModel;
-using CodeMe.ScaffoldCS.Metadata.CSharp;
 using CodeMe.ScaffoldCS.Metadata.UnitTests.Infrastructure;
 using T = CodeMe.ScaffoldCS.Metadata.CodeModel.WellKnownTypes;
 using static CodeMe.ScaffoldCS.Metadata.CodeModel.TypeInfo;
@@ -8,19 +7,19 @@ using static CodeMe.ScaffoldCS.Metadata.CodeModel.TypeInfo;
 namespace CodeMe.ScaffoldCS.Metadata.UnitTests;
 
 [Collection(nameof(CSharpMetadataCollection))]
-public sealed class CSharpMetadataContextTests
+public sealed class CSharpMetadataProviderTests
 {
-    private readonly ICSharpMetadataContext _metadataContext;
+    private readonly ICSharpMetadataProvider _metadataProvider;
 
-    public CSharpMetadataContextTests(CSharpMetadataFixture fixture)
+    public CSharpMetadataProviderTests(CSharpMetadataFixture fixture)
     {
-        _metadataContext = fixture.MetadataContext;
+        _metadataProvider = fixture.MetadataProvider;
     }
 
     private DtoModel GetModel([CallerMemberName] string? caller = null)
     {
         var dtoName = caller!.Split('_', 2)[0];
-        return _metadataContext.GetDto(WellKnownTestClasses.BasicDtos, dtoName);
+        return _metadataProvider.GetDto(WellKnownTestClasses.BasicDtos, dtoName);
     }
 
     private void Assert(DtoModel expected, [CallerMemberName] string? caller = null) =>

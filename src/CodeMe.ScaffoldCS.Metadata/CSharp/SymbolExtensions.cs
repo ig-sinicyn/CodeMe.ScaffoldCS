@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 
 namespace CodeMe.ScaffoldCS.Metadata.CSharp;
 
-internal static class CSharpSymbolExtensions
+internal static class SymbolExtensions
 {
     extension(ITypeSymbol symbol)
     {

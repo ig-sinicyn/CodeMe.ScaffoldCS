@@ -7,15 +7,15 @@ using Microsoft.Extensions.Options;
 
 namespace CodeMe.ScaffoldCS.Metadata.CSharp;
 
-public class CSharpMetadataContext : ModelSourceBase<CSharpCompilation>, ICSharpMetadataContext
+public class CSharpMetadataProvider : ModelSourceBase<CSharpCompilation>, ICSharpMetadataProvider
 {
-    private readonly IFileAccessor _fileAccessor;
+    private readonly IModelFileAccessor _fileAccessor;
 
-    private readonly IOptionsMonitor<CSharpMetadataContextOptions> _options;
+    private readonly IOptionsMonitor<CSharpMetadataProviderOptions> _options;
 
-    public CSharpMetadataContext(
-        IFileAccessor fileAccessor,
-        IOptionsMonitor<CSharpMetadataContextOptions> options)
+    public CSharpMetadataProvider(
+        IModelFileAccessor fileAccessor,
+        IOptionsMonitor<CSharpMetadataProviderOptions> options)
     {
         _fileAccessor = fileAccessor;
         _options = options;
@@ -79,12 +79,19 @@ public class CSharpMetadataContext : ModelSourceBase<CSharpCompilation>, ICSharp
         return compilation;
     }
 
+    public DtoModel GetDto(string typeName)
+    {
+        var files = State.SyntaxTrees.Select(x => (CompilationUnitSyntax)x.GetRoot());
+        var type = CSharpMetadataParser.ResolveTargetType(files, typeName);
+
+        return CSharpMetadataParser.ParseDto(type, State);
+    }
+
     public DtoModel GetDto(string fileName, string typeName)
     {
         var path = _fileAccessor.ResolveFullPath(fileName);
-
-        var file = State.SyntaxTrees.First(x => x.FilePath.Equals(path));
-        var type = CSharpMetadataParser.ResolveTargetType((CompilationUnitSyntax)file.GetRoot(), typeName);
+        var file = (CompilationUnitSyntax)State.SyntaxTrees.First(x => x.FilePath.Equals(path)).GetRoot();
+        var type = CSharpMetadataParser.ResolveTargetType(file, typeName);
 
         return CSharpMetadataParser.ParseDto(type, State);
     }

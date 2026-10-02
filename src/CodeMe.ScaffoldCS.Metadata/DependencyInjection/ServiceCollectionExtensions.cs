@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using CodeMe.ScaffoldCS.Metadata.CSharp;
+using CodeMe.ScaffoldCS.Metadata.Internals;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -11,22 +12,22 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         string? rootDictionary = null)
     {
-        services.AddFileAccessor();
+        services.AddModelFileAccessor();
         return new ModelSourcesBuilder(services)
             .SetBasePath(rootDictionary);
     }
 
-    private static IServiceCollection AddFileAccessor(this IServiceCollection services)
+    private static IServiceCollection AddModelFileAccessor(this IServiceCollection services)
     {
-        services.AddOptions<FileAccessorOptions>();
-        services.TryAddSingleton<IFileAccessor, DefaultFileAccessor>();
+        services.AddOptions<ModelFileAccessorOptions>();
+        services.TryAddSingleton<IModelFileAccessor, DefaultModelFileAccessor>();
 
         return services;
     }
 
     public static IModelSourcesBuilder SetBasePath(this IModelSourcesBuilder modelBuilder, string? path)
     {
-        modelBuilder.Services.AddOptions<FileAccessorOptions>().Configure(opt => opt.BasePath = path);
+        modelBuilder.Services.AddOptions<ModelFileAccessorOptions>().Configure(opt => opt.BasePath = path);
         return modelBuilder;
     }
 
@@ -87,16 +88,16 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddCSharpSourceContext(
         this IServiceCollection services,
-        Action<CSharpMetadataContextOptions>? configure = null)
+        Action<CSharpMetadataProviderOptions>? configure = null)
     {
-        var optionsBuilder = services.AddOptions<CSharpMetadataContextOptions>();
+        var optionsBuilder = services.AddOptions<CSharpMetadataProviderOptions>();
 
         var oldCount = services.Count;
-        services.TryAddSingleton<ICSharpMetadataContext, CSharpMetadataContext>();
+        services.TryAddSingleton<ICSharpMetadataProvider, CSharpMetadataProvider>();
         if (services.Count > oldCount)
         {
             services.AddSingleton<IModelSource>(
-                provider => (IModelSource)provider.GetRequiredService<ICSharpMetadataContext>());
+                provider => (IModelSource)provider.GetRequiredService<ICSharpMetadataProvider>());
         }
 
         if (configure != null)
@@ -109,9 +110,9 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection ConfigureCSharpSourceContext(
         this IServiceCollection services,
-        Action<CSharpMetadataContextOptions> configure)
+        Action<CSharpMetadataProviderOptions> configure)
     {
-        services.AddOptions<CSharpMetadataContextOptions>().Configure(configure);
+        services.AddOptions<CSharpMetadataProviderOptions>().Configure(configure);
 
         return services;
     }

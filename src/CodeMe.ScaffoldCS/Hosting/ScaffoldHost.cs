@@ -41,7 +41,7 @@ public static class ScaffoldHost
 
     private static void AddScaffoldServices(this IServiceCollection services)
     {
-        services.AddHostedService<MetadataBackgroundService>();
+        services.AddHostedService<ModelLoaderBackgroundService>();
         services.AddSingleton<ScaffoldRenderService>();
     }
 

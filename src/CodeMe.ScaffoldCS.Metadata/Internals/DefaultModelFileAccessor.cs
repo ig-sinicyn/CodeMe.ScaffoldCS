@@ -1,14 +1,14 @@
 ﻿using Microsoft.Extensions.Options;
 
-namespace CodeMe.ScaffoldCS.Metadata;
+namespace CodeMe.ScaffoldCS.Metadata.Internals;
 
-public class DefaultFileAccessor : IFileAccessor, IDisposable
+public class DefaultModelFileAccessor : IModelFileAccessor, IDisposable
 {
     private readonly IDisposable? _optionsSubscription;
 
     private string? _basePath;
 
-    public DefaultFileAccessor(IOptionsMonitor<FileAccessorOptions> options)
+    public DefaultModelFileAccessor(IOptionsMonitor<ModelFileAccessorOptions> options)
     {
         _basePath = options.CurrentValue.BasePath == null
             ? null

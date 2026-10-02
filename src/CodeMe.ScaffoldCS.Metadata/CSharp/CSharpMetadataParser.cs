@@ -8,7 +8,7 @@ namespace CodeMe.ScaffoldCS.Metadata.CSharp;
 
 internal static class CSharpMetadataParser
 {
-    public static BaseTypeDeclarationSyntax ResolveTargetType(CompilationUnitSyntax root, string typeName)
+    public static BaseTypeDeclarationSyntax? ResolveTargetTypeOrDefault(CompilationUnitSyntax root, string? typeName)
     {
         var candidates = root.DescendantNodes()
             .OfType<BaseTypeDeclarationSyntax>()
@@ -23,7 +23,7 @@ internal static class CSharpMetadataParser
 
         if (candidates.Length == 0)
         {
-            throw new InvalidOperationException($"No class or interface named '{typeName}' was found in the file.");
+            return null;
         }
 
         if (string.IsNullOrWhiteSpace(typeName))
@@ -32,9 +32,22 @@ internal static class CSharpMetadataParser
         }
 
         return candidates.FirstOrDefault(type => type.NameMatches(typeName))
-            ?? candidates.FirstOrDefault(type => type.FullNameMatches(typeName))
-            ?? throw new InvalidOperationException($"No class or interface named '{typeName}' was found in the file.");
+            ?? candidates.FirstOrDefault(type => type.FullNameMatches(typeName));
     }
+
+    public static BaseTypeDeclarationSyntax ResolveTargetType(
+        IEnumerable<CompilationUnitSyntax> roots,
+        string? typeName) =>
+        roots
+            .Select(x => ResolveTargetTypeOrDefault(x, typeName))
+            .FirstOrDefault(x => x != null)
+        ?? throw new InvalidOperationException(
+            $"Unable to resolve the target type '{typeName}'.");
+
+    public static BaseTypeDeclarationSyntax ResolveTargetType(CompilationUnitSyntax root, string? typeName) =>
+        ResolveTargetTypeOrDefault(root, typeName)
+        ?? throw new InvalidOperationException(
+            $"Unable to resolve the target type '{typeName}'.");
 
     public static DtoModel ParseDto(BaseTypeDeclarationSyntax declaration, CSharpCompilation compilation) =>
         declaration switch
