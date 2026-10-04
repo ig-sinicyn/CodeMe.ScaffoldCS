@@ -3,25 +3,16 @@ using CodeMe.ScaffoldCS.Metadata.CSharp;
 using CodeMe.ScaffoldCS.Metadata.Internals;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 
 namespace CodeMe.ScaffoldCS.Metadata.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-    public static ModelSourcesBuilder AddModelSources(
-        this IServiceCollection services,
-        string? basePath = null)
+    public static ModelSourcesBuilder AddModelSources(this IServiceCollection services)
     {
         services.AddModelFileAccessor();
 
-        var builder = new ModelSourcesBuilder(services);
-        if (!string.IsNullOrEmpty(basePath))
-        {
-            builder.SetBasePath(basePath);
-        }
-
-        return builder;
+        return new ModelSourcesBuilder(services);
     }
 
     private static IServiceCollection AddModelFileAccessor(this IServiceCollection services)

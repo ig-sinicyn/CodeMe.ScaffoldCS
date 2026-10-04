@@ -17,14 +17,6 @@ public static class ServiceCollectionExtensions
     {
         var optionsBuilder = services.AddOptions<ScaffoldOptions>();
         optionsBuilder.Bind(configuration);
-        optionsBuilder.PostConfigure(
-            opt =>
-            {
-                if (opt.ModelBasePath == null && opt.ModelPath != null)
-                {
-                    opt.ModelBasePath = Path.GetDirectoryName(opt.ModelPath);
-                }
-            });
         if (configure != null)
         {
             optionsBuilder.Configure(configure);
@@ -41,26 +33,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static ScaffoldBuilder AddScaffold(
-        this IServiceCollection services,
-        string? outputPath = null,
-        string? modelPath = null,
-        bool allowOverwrite = false) => new ScaffoldBuilder(services)
-        .ConfigureScaffoldServices(
-            opt =>
-            {
-                if (outputPath != null)
-                {
-                    opt.OutputPath = outputPath;
-                }
-
-                if (outputPath != null)
-                {
-                    opt.ModelBasePath = modelPath;
-                }
-
-                opt.AllowOverwrite = allowOverwrite;
-            });
+    public static ScaffoldBuilder AddScaffold(this IServiceCollection services) => new(services);
 
     public static ScaffoldBuilder ConfigureScaffoldServices(
         this ScaffoldBuilder builder,

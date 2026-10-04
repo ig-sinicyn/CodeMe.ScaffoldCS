@@ -15,7 +15,13 @@ public class CreateRequestFile(
 
     protected override void Render(Template template)
     {
-        var model = codeModelProvider.GetDto(options.Value.ModelPath!);
+        var model = codeModelProvider.GetDtoByFile(options.Value.ModelPath!);
+
+        var fields = model.Fields
+            .Where(
+                x => !x.Name.StartsWith("Created")
+                    && !x.Name.StartsWith("Updated"))
+            .ToArray();
 
         template.Write(
             $$"""
@@ -23,11 +29,11 @@ public class CreateRequestFile(
             
             {{IF(model.Comment)}}
             /// <summary>
-            /// Account details.
+            /// {{model.Comment}}
             /// </summary>
             {{ENDIF}}
-            {{model.Fields.WhereHasValue(x => x.Comment).Render(x => $"""/// <param name="{x.Name}">{x.Comment}</param>""")}}
-            public record Create{{model.Name}}Request({{model.Fields.RenderCommaSeparated(x => $"""{x.Type.Name} {x.Name}""")}});
+            {{fields.WhereHasValue(x => x.Comment).Render(x => $"""/// <param name="{x.Name}">{x.Comment}</param>""")}}
+            public record Create{{model.Name}}Request({{fields.RenderCommaSeparated(x => $"""{x.Type.Name} {x.Name}""")}});
             """);
     }
 }

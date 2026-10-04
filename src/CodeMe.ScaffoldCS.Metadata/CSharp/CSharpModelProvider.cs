@@ -79,7 +79,7 @@ public class CSharpModelProvider : ModelSourceBase<CSharpCompilation>, ICSharpMo
         return compilation;
     }
 
-    public DtoModel GetDto(string typeName)
+    public DtoModel GetDtoByType(string typeName)
     {
         var files = State.SyntaxTrees.Select(x => (CompilationUnitSyntax)x.GetRoot());
         var type = CSharpModelParser.ResolveTargetType(files, typeName);
@@ -87,7 +87,7 @@ public class CSharpModelProvider : ModelSourceBase<CSharpCompilation>, ICSharpMo
         return CSharpModelParser.ParseDto(type, State);
     }
 
-    public DtoModel GetDto(string fileName, string typeName)
+    public DtoModel GetDtoByFile(string fileName, string? typeName = null)
     {
         var path = _fileAccessor.ResolveFullPath(fileName);
         var file = (CompilationUnitSyntax)State.SyntaxTrees.First(x => x.FilePath.Equals(path)).GetRoot();

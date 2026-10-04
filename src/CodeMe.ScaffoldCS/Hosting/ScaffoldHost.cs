@@ -62,7 +62,7 @@ public static class ScaffoldHost
     {
         await host.StartAsync(cancellation);
 
-        var render = host.Services.GetRequiredService<ScaffoldService>();
+        var render = host.Services.GetRequiredService<IScaffoldService>();
 
         await render.RenderAsync(cancellation);
 

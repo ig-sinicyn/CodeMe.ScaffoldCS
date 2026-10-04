@@ -19,7 +19,7 @@ public sealed class CSharpModelProviderTests
     private DtoModel GetModel([CallerMemberName] string? caller = null)
     {
         var dtoName = caller!.Split('_', 2)[0];
-        return _modelProvider.GetDto(WellKnownTestClasses.BasicDtos, dtoName);
+        return _modelProvider.GetDtoByFile(WellKnownTestClasses.BasicDtos, dtoName);
     }
 
     private void Assert(DtoModel expected, [CallerMemberName] string? caller = null) =>

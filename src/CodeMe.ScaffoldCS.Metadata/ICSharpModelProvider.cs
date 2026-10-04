@@ -4,7 +4,7 @@ namespace CodeMe.ScaffoldCS.Metadata;
 
 public interface ICSharpModelProvider
 {
-    DtoModel GetDto(string typeName);
+    DtoModel GetDtoByType(string typeName);
 
-    DtoModel GetDto(string fileName, string typeName);
+    DtoModel GetDtoByFile(string fileName, string? typeName = null);
 }
