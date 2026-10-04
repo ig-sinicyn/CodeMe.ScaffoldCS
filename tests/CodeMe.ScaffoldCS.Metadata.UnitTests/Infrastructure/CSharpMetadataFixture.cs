@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace CodeMe.ScaffoldCS.Metadata.UnitTests.Infrastructure;
 
-public class CSharpMetadataFixture : IAsyncLifetime
+public sealed class CSharpMetadataFixture : IAsyncLifetime
 {
     private readonly IServiceProvider _services;
 
@@ -15,10 +15,10 @@ public class CSharpMetadataFixture : IAsyncLifetime
             .AddCSharpSource(WellKnownTestClasses.BasicDtos);
 
         _services = services.BuildServiceProvider();
-        MetadataProvider = _services.GetRequiredService<ICSharpMetadataProvider>();
+        ModelProvider = _services.GetRequiredService<ICSharpModelProvider>();
     }
 
-    public ICSharpMetadataProvider MetadataProvider { get; }
+    public ICSharpModelProvider ModelProvider { get; }
 
     public async ValueTask InitializeAsync()
     {

@@ -4,13 +4,11 @@ namespace CodeMe.ScaffoldCS.Metadata.CSharp;
 
 public class CSharpModelProviderOptions
 {
-    private static readonly StringComparer _pathComparer = StringComparer.OrdinalIgnoreCase;
-
     public LanguageVersion LanguageVersion { get; set; } = LanguageVersion.Preview;
 
-    public HashSet<string> SourceFileNames { get; } = new(_pathComparer);
+    public HashSet<string> SourceFileNames { get; } = new(PathHelper.PathComparer);
 
-    public Dictionary<string, string> SourceFiles { get; } = new(_pathComparer);
+    public Dictionary<string, string> SourceFiles { get; } = new(PathHelper.PathComparer);
 
-    public HashSet<string> SourceReferences { get; } = new(_pathComparer);
+    public HashSet<string> SourceReferences { get; } = new(PathHelper.PathComparer);
 }

@@ -10,6 +10,8 @@ public abstract class ScaffoldFileBase : IScaffoldPart
 
     protected abstract string FileName { get; }
 
+    protected IScaffoldContext Context { get; private set; } = null!;
+
     public async ValueTask RenderAsync(IScaffoldContext context, CancellationToken cancellation = default)
     {
         if (!Enabled)
@@ -17,17 +19,26 @@ public abstract class ScaffoldFileBase : IScaffoldPart
             return;
         }
 
-        var file = await context.GetOrCreateFileAsync(FileName, cancellation);
-        var options = CreateTemplateOptions(context.RenderOptions);
-
-        var output = new StringWriter();
-        using (var template = new Template(output, options))
-        using (template.BeginAmbientScope())
+        var prev = Context;
+        try
         {
-            Render(template);
-        }
+            Context = context;
+            var file = await context.GetOrCreateFileAsync(FileName, cancellation);
+            var options = CreateTemplateOptions(context.RenderOptions);
 
-        file.Content = output.ToString();
+            var output = new StringWriter();
+            using (var template = new Template(output, options))
+            using (template.BeginAmbientScope())
+            {
+                Render(template);
+            }
+
+            file.Content = output.ToString();
+        }
+        finally
+        {
+            Context = prev;
+        }
     }
 
     protected virtual TemplateTextWriterOptions CreateTemplateOptions(ScaffoldRenderOptions options)

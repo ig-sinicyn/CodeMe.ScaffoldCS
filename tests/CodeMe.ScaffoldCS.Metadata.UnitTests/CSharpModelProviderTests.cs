@@ -9,17 +9,17 @@ namespace CodeMe.ScaffoldCS.Metadata.UnitTests;
 [Collection(nameof(CSharpMetadataCollection))]
 public sealed class CSharpModelProviderTests
 {
-    private readonly ICSharpMetadataProvider _metadataProvider;
+    private readonly ICSharpModelProvider _modelProvider;
 
     public CSharpModelProviderTests(CSharpMetadataFixture fixture)
     {
-        _metadataProvider = fixture.MetadataProvider;
+        _modelProvider = fixture.ModelProvider;
     }
 
     private DtoModel GetModel([CallerMemberName] string? caller = null)
     {
         var dtoName = caller!.Split('_', 2)[0];
-        return _metadataProvider.GetDto(WellKnownTestClasses.BasicDtos, dtoName);
+        return _modelProvider.GetDto(WellKnownTestClasses.BasicDtos, dtoName);
     }
 
     private void Assert(DtoModel expected, [CallerMemberName] string? caller = null) =>

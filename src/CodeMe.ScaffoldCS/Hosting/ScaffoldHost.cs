@@ -7,11 +7,29 @@ namespace CodeMe.ScaffoldCS.Hosting;
 
 public static class ScaffoldHost
 {
+    public static async Task<int> RunAsync<TStartup>(
+        string[] args,
+        CancellationToken cancellation = default)
+        where TStartup : IScaffoldStartup =>
+        await RunAsync(typeof(TStartup), new ScaffoldHostOptions(args), cancellation);
+
+    public static async Task<int> RunAsync<TStartup>(
+        ScaffoldHostOptions options,
+        CancellationToken cancellation = default)
+        where TStartup : IScaffoldStartup =>
+        await RunAsync(typeof(TStartup), options, cancellation);
+
     public static async Task<int> RunAsync(
         Type startup,
         ScaffoldHostOptions options,
         CancellationToken cancellation = default)
     {
+        if (!startup.IsAssignableTo(typeof(IScaffoldStartup)))
+        {
+            throw new ArgumentException(
+                $"The {startup} type must implement {nameof(IScaffoldStartup)} interface", nameof(startup));
+        }
+
         var host = BuildHost(startup, options);
         return await RunHostAsync(host, cancellation);
     }
@@ -30,7 +48,7 @@ public static class ScaffoldHost
         options.Configure?.Invoke(builder.Services, builder.Configuration);
 
         // Setup scaffolding
-        builder.Services.AddScaffoldServices();
+        builder.Services.AddScaffoldServices(builder.Configuration);
 
         // Startup
         var startupInstance = (IScaffoldStartup)Activator.CreateInstance(startup)!;

@@ -4,7 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 namespace CodeMe.ScaffoldCS.Hosting;
 
 public record ScaffoldHostOptions(
-    string[] Args,
-    string? BasePath,
+    string[]? Args = null,
+    string? BasePath = null,
     Action<IServiceCollection, IConfiguration>? Configure = null,
-    Action<IConfigurationBuilder>? ConfigureConfig = null);
+    Action<IConfigurationBuilder>? ConfigureConfig = null)
+{
+}

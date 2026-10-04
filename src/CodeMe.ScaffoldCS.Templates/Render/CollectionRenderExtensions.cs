@@ -16,6 +16,9 @@ public static class CollectionRenderExtensions
     public static ITemplateSymbol RenderCommaSeparated<T>(this IEnumerable<T> value) =>
         new CollectionSymbol<T>(value, null, CollectionRenderOptions.CommaSeparated);
 
+    public static ITemplateSymbol RenderCommaSeparated<T>(this IEnumerable<T> value, Func<T, TemplatePart> format) =>
+        new CollectionSymbol<T>(value, format, CollectionRenderOptions.CommaSeparated);
+
     public static ITemplateSymbol RenderEmptyLineSeparated<T>(this IEnumerable<T> value) =>
         new CollectionSymbol<T>(value, null, CollectionRenderOptions.EmptyLineSeparated);
 

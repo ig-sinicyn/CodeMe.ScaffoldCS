@@ -1,9 +1,13 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Text;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace CodeMe.ScaffoldCS.Internals;
 
 internal sealed partial class ScaffoldService(
+    IScaffoldFileAccessor fileAccessor,
     IEnumerable<IScaffoldPart> parts,
+    IOptionsMonitor<ScaffoldOptions> options,
     ILogger<ScaffoldService> logger) : IScaffoldService
 {
     public async ValueTask RenderAsync(CancellationToken cancellation = default)
@@ -16,11 +20,13 @@ internal sealed partial class ScaffoldService(
         }
 
         LogRenderStart();
+
+        var context = new ScaffoldContext(fileAccessor, options);
         foreach (var scaffoldPart in partsToRender)
         {
             try
             {
-                await scaffoldPart.RenderAsync(cancellation);
+                await scaffoldPart.RenderAsync(context, cancellation);
             }
             catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
             {
@@ -34,6 +40,36 @@ internal sealed partial class ScaffoldService(
         }
 
         LogRenderComplete();
+
+        await SaveContextAsync(context, cancellation);
+    }
+
+    private async Task SaveContextAsync(ScaffoldContext context, CancellationToken cancellation)
+    {
+        var encodingName = options.CurrentValue.EncodingName;
+        var defaultEncoding = encodingName == null
+            ? Encoding.UTF8
+            : Encoding.GetEncoding(encodingName);
+        foreach (var fileContent in context.GetAllFiles())
+        {
+            if (fileContent.Content == null)
+            {
+                continue;
+            }
+
+            var encoding = fileContent.EncodingName == null
+                ? defaultEncoding
+                : Encoding.GetEncoding(fileContent.EncodingName);
+
+            await File.WriteAllTextAsync(
+                fileContent.Path,
+                fileContent.Content,
+                encoding,
+                cancellation);
+            LogFileSaved(fileContent.Path);
+        }
+
+        LogFilesSaved();
     }
 
     [LoggerMessage(
@@ -55,4 +91,14 @@ internal sealed partial class ScaffoldService(
         LogLevel.Information,
         "Render complete")]
     private partial void LogRenderComplete();
+
+    [LoggerMessage(
+        LogLevel.Information,
+        "Scaffold file saved to {Path}")]
+    private partial void LogFileSaved(string path);
+
+    [LoggerMessage(
+        LogLevel.Information,
+        "All scaffold files saved")]
+    private partial void LogFilesSaved();
 }
