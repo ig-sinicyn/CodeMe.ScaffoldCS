@@ -4,6 +4,8 @@ namespace CodeMe.ScaffoldCS.Metadata.CodeModel;
 
 public static class WellKnownTypes
 {
+    public static readonly TypeInfo Void = Primitive("void");
+
     public static readonly TypeInfo Boolean = Primitive("bool");
 
     public static readonly TypeInfo Byte = Primitive("byte");

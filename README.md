@@ -4,10 +4,6 @@ Scaffolding framework inspired by CodegenCS
 # Template issues
 
 Have a good scenarios:
-* Last line behavior (last line is empty)
-  * May be fixed if we keep endline in the current line and trim endline on close
-    (last line behavior)
-  * Will also fix inconsistency with delayed flush on MacOS ('\r' separator)
 * Consider to split Template and advanced rendering logic. The goal is to have api that allows to add third-party rendering customisation
 * Add api for column-level padding. Func to PaddedTemplatePart?
   * Need both options.
@@ -24,6 +20,12 @@ Waits for grooming:
 * Multiline value nahdling.
   * Add option for Template to disable multiline indentation. Add .RenderLiteral() / .RenderMultiline()
   * Or just add .RenderLiteral() and no option
+* Raw literal?
+  * Postproned as no use case
+* Collection render options, preffix and suffix
+* Collection render options, wrap on length
+* Dictionary render?
+    * Need good scenario, current render works fine
 
 Delayed:
 * Docs are missing
@@ -33,5 +35,16 @@ Delayed:
 
 * Metadata accessibility modifiers
 * Metadata default values
+* Metadata arg comments (records)
 * Implicit usings + using declarations for type aliases.
 * ToString methods to ease metadata model append
+
+# Scaffold API
+* Last line behavior option
+* Simplify template code. Less usings?
+* CSharp render for DTO?
+* Backport string helpers such as trim suffix / prefis, snake_case and so on
+
+# Scaffold tool issues
+* Something like dotnet tool, modules as templates
+* Needs designdoc.

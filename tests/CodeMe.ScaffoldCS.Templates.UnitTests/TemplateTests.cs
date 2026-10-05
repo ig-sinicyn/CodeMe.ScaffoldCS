@@ -32,9 +32,11 @@ public class TemplateTests
             
             namespace TestModels;
             
-            {{IF(dto.Comment)}}/// <summary>
+            {{IF(dto.Comment)}}
+            /// <summary>
             /// {{dto.Comment}}.
-            /// </summary>{{ENDIF}}
+            /// </summary>
+            {{ENDIF}}
             public class {{dto.Name}}
             {
                 {{dto.Properties.RenderEmptyLineSeparated(RenderProperty)}}
@@ -285,6 +287,30 @@ public class TemplateTests
     }
 
     [Fact]
+    public void ClearLine_ShouldBeExpected()
+    {
+        // Arrange
+        var writer = CreateTemplate();
+        using var _ = writer.BeginAmbientScope();
+
+        // Act
+        writer.Write(
+            $"""
+            111{CL}222
+            333{CL}
+            {CL}444
+            """);
+
+        // Assert
+        writer.ShouldBe(
+            """
+            222
+            
+            444
+            """);
+    }
+
+    [Fact]
     public void Iif_True_Template_ShouldBeExpected()
     {
         // Arrange
@@ -311,12 +337,29 @@ public class TemplateTests
     }
 
     [Fact]
+    public void RemoveLine_ShouldBeExpected()
+    {
+        // Arrange
+        var writer = CreateTemplate();
+        using var _ = writer.BeginAmbientScope();
+
+        // Act
+        writer.Write(
+            $"""
+            {RL}
+            """);
+
+        // Assert
+        writer.ShouldBe("");
+    }
+
+    [Fact]
     public void MultipleRemoveLine_ShouldBeExpected()
     {
         // Arrange
-        var dto = _testDto;
         var writer = CreateTemplate();
         using var _ = writer.BeginAmbientScope();
+
         // Act
         writer.Write(
             $"""
@@ -326,10 +369,7 @@ public class TemplateTests
             """);
 
         // Assert
-        writer.ShouldBe(
-            """
-            
-            """);
+        writer.ShouldBe("");
     }
 
     private static TemplatePart RenderProperty(Property property) =>

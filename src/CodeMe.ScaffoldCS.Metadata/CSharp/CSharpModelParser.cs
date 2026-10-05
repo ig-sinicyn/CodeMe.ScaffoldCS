@@ -76,7 +76,8 @@ internal static class CSharpModelParser
         }
 
         return new DtoModel(
-            new TypeName(symbol.Name, symbol.Namespace),
+            symbol.Name,
+            symbol.Namespace,
             TypeRole.Dto,
             symbol.GetDocumentationSummary(),
             fields.ToArray());
@@ -96,7 +97,8 @@ internal static class CSharpModelParser
             .Select(x => ParseDtoField(x, underlyingType, compilation));
 
         return new DtoModel(
-            new TypeName(symbol.Name, symbol.Namespace),
+            symbol.Name,
+            symbol.Namespace,
             TypeRole.Enum,
             symbol.GetDocumentationSummary(),
             fields.ToArray());
@@ -174,7 +176,7 @@ internal static class CSharpModelParser
         var typeSymbol = semanticModel.GetTypeInfo(typeSyntax).Type;
         if (typeSymbol is null)
         {
-            return new TypeInfo(new TypeName(typeSyntax.ToString()), TypeRole.Primitive, false, []);
+            return new TypeInfo(typeSyntax.ToString(), null, TypeRole.Primitive, false, []);
         }
 
         return Resolve(
@@ -189,13 +191,12 @@ internal static class CSharpModelParser
         if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
         {
             return new TypeInfo(
-                new TypeName(arrayTypeSymbol.ElementType.Name, arrayTypeSymbol.ElementType.Namespace),
+                arrayTypeSymbol.ElementType.Name,
+                arrayTypeSymbol.ElementType.Namespace,
                 TypeRole.Collection,
                 isNullable,
                 new[] { Resolve(arrayTypeSymbol.ElementType, false) });
         }
-
-        var typeName = new TypeName(typeSymbol.Name, typeSymbol.Namespace);
 
         if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
         {
@@ -204,7 +205,8 @@ internal static class CSharpModelParser
                 if (IsDictionary(namedTypeSymbol))
                 {
                     return new TypeInfo(
-                        typeName,
+                        typeSymbol.Name,
+                        typeSymbol.Namespace,
                         TypeRole.Dictionary,
                         isNullable,
                         namedTypeSymbol.TypeArguments.Select(arg => Resolve(arg, false)).ToArray());
@@ -213,7 +215,8 @@ internal static class CSharpModelParser
                 if (IsCollection(namedTypeSymbol))
                 {
                     return new TypeInfo(
-                        typeName,
+                        typeSymbol.Name,
+                        typeSymbol.Namespace,
                         TypeRole.Collection,
                         isNullable,
                         namedTypeSymbol.TypeArguments.Select(arg => Resolve(arg, false)).ToArray());
@@ -228,21 +231,24 @@ internal static class CSharpModelParser
             if (IsPrimitive(namedTypeSymbol))
             {
                 return new TypeInfo(
-                    new TypeName(SymbolDisplay.ToDisplayString(namedTypeSymbol)),
+                    SymbolDisplay.ToDisplayString(namedTypeSymbol),
+                    null,
                     TypeRole.Primitive,
                     isNullable,
                     []);
             }
 
             return new TypeInfo(
-                typeName,
+                typeSymbol.Name,
+                typeSymbol.Namespace,
                 TypeRole.Dto,
                 isNullable,
                 namedTypeSymbol.TypeArguments.Select(arg => Resolve(arg, false)).ToArray());
         }
 
         return new TypeInfo(
-            typeName,
+            typeSymbol.Name,
+            typeSymbol.Namespace,
             TypeRole.Dto,
             isNullable,
             []);

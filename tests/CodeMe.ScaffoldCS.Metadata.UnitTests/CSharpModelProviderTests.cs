@@ -27,7 +27,7 @@ public sealed class CSharpModelProviderTests
 
     [Fact]
     public void EmptyDto_ShouldBeExpected() => Assert(
-        new DtoModel("EmptyDto", "Tests", comment: null));
+        new DtoModel("EmptyDto", "Tests"));
 
     [Fact]
     public void EmptyDtoWithComment_ShouldBeExpected() => Assert(
@@ -88,7 +88,8 @@ public sealed class CSharpModelProviderTests
     [Fact]
     public void Int32Enum_ShouldBeExpected() => Assert(
         new DtoModel(
-            new TypeName("Int32Enum", "Tests"),
+            "Int32Enum",
+            "Tests",
             TypeRole.Enum,
             "Enum comment.",
             [
@@ -109,7 +110,8 @@ public sealed class CSharpModelProviderTests
     [Fact]
     public void Int64Enum_ShouldBeExpected() => Assert(
         new DtoModel(
-            new TypeName("Int64Enum", "Tests"),
+            "Int64Enum",
+            "Tests",
             TypeRole.Enum,
             null,
             [

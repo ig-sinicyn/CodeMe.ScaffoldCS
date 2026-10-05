@@ -10,8 +10,7 @@ public readonly struct CollectionSymbol<T>(
 {
     public void Render(Template template)
     {
-        var hasFormat = callback == null && (options.Alignment != 0 || options.Format != null);
-
+        var hasFormat = options.Alignment != 0 || options.Format != null;
         var hasItem = false;
         using var _ = template.BeginOptionsScope(IndentationFormat.CurrentLine);
         foreach (var item in source)

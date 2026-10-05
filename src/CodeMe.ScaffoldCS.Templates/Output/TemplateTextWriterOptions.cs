@@ -7,6 +7,7 @@ public sealed record TemplateTextWriterOptions(
     ReadOnlyMemory<char> Indentation,
     ReadOnlyMemory<char> SingleIndentation,
     NewLineFormat NewLineFormat,
+    LastLineHandlingMode LastLineHandlingMode,
     bool AppendIndentationOnEmptyLines,
     bool TrimLineEnd,
     bool NormalizeNewLines)
@@ -16,6 +17,7 @@ public sealed record TemplateTextWriterOptions(
         Indentation: Array.Empty<char>().AsMemory(),
         SingleIndentation: "\t".AsMemory(),
         NewLineFormat: NewLineFormat.Auto,
+        LastLineHandlingMode: LastLineHandlingMode.Normal,
         AppendIndentationOnEmptyLines: true,
         TrimLineEnd: true,
         NormalizeNewLines: true);

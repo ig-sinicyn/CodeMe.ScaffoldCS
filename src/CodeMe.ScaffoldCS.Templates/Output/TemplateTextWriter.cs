@@ -12,6 +12,8 @@ internal sealed class TemplateTextWriter : IDisposable
     private CurrentLineState _currentLineState;
     private CurrentLineHandlingMode _currentLineHandlingMode;
 
+    private CurrentLineHandlingMode _nextLineHandlingMode;
+
     public TemplateTextWriter(TextWriter output, TemplateTextWriterOptions? options = null, bool leaveOpen = false)
     {
         _output = output;
@@ -39,41 +41,59 @@ internal sealed class TemplateTextWriter : IDisposable
 
     public ReadOnlyMemory<char> GetCurrentLineIndentation(IndentationFormat format)
     {
-        if (format == IndentationFormat.Empty)
+        switch (format)
         {
-            return Array.Empty<char>();
-        }
-
-        if (format == IndentationFormat.CurrentIndentation || _currentLineState != CurrentLineState.ValueAppended)
-        {
-            return Options.Indentation;
-        }
-
-        if (format == IndentationFormat.IncreasedIndentation || _currentLineState != CurrentLineState.ValueAppended)
-        {
-            return string.Concat(Options.Indentation.Span, Options.SingleIndentation.Span).AsMemory();
-        }
-
-        var result = new char[_currentLine.Length];
-        _currentLine.CopyTo(0, result, _currentLine.Length);
-
-        if (format == IndentationFormat.CurrentLineWhitespace)
-        {
-            for (var i = 0; i < result.Length; i++)
-            {
-                if (!char.IsWhiteSpace(result[i]))
+            case IndentationFormat.Empty:
+                return Array.Empty<char>();
+            case IndentationFormat.IncreasedIndentation:
+                return string.Concat(Options.Indentation.Span, Options.SingleIndentation.Span).AsMemory();
+            case IndentationFormat.CurrentIndentation:
+                return Options.Indentation;
+            case IndentationFormat.CurrentLine when _currentLineState != CurrentLineState.ValueAppended:
+                return Options.Indentation;
+            case IndentationFormat.CurrentLine:
+                var currentLine = new char[_currentLine.Length];
+                _currentLine.CopyTo(0, currentLine, _currentLine.Length);
+                return currentLine;
+            case IndentationFormat.CurrentLineWhitespace:
+                char[] result;
+                if (_currentLineState != CurrentLineState.ValueAppended)
                 {
-                    result[i] = ' ';
+                    result = Options.Indentation.ToArray();
                 }
-            }
-        }
+                else
+                {
+                    result = new char[_currentLine.Length];
+                    _currentLine.CopyTo(0, result, _currentLine.Length);
+                }
 
-        return result;
+                for (var i = 0; i < result.Length; i++)
+                {
+                    if (!char.IsWhiteSpace(result[i]))
+                    {
+                        result[i] = ' ';
+                    }
+                }
+
+                return result;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(format), format, null);
+        }
     }
 
     public TemplateTextWriter SetCurrentLineHandling(CurrentLineHandlingMode lineHandling)
     {
-        _currentLineHandlingMode = lineHandling;
+        if (_currentLineState is CurrentLineState.CrAppended
+            or CurrentLineState.LfAppended
+            or CurrentLineState.CrLfAppended)
+        {
+            _nextLineHandlingMode = lineHandling;
+        }
+        else
+        {
+            _currentLineHandlingMode = lineHandling;
+        }
+
         return this;
     }
 
@@ -196,10 +216,13 @@ internal sealed class TemplateTextWriter : IDisposable
                     break;
 
                 case '\n':
-                    BeforeAppend(CurrentLineState.LfAppended);
+                    var nextLineState = _currentLineState == CurrentLineState.CrAppended
+                        ? CurrentLineState.CrLfAppended
+                        : CurrentLineState.LfAppended;
+                    BeforeAppend(nextLineState);
                     _currentLine.Append(value[index]);
                     index++;
-                    AfterAppend(CurrentLineState.LfAppended);
+                    AfterAppend(nextLineState);
                     break;
 
                 default:
@@ -238,7 +261,15 @@ internal sealed class TemplateTextWriter : IDisposable
     {
         AssertNotClosed();
 
-        if (_currentLineState is CurrentLineState.CrAppended && nextLineState is not CurrentLineState.LfAppended)
+        var startsNewLine = _currentLineState switch
+        {
+            CurrentLineState.CrAppended when nextLineState is CurrentLineState.CrLfAppended => false,
+            CurrentLineState.CrAppended => true,
+            CurrentLineState.LfAppended => true,
+            CurrentLineState.CrLfAppended => true,
+            _ => false
+        };
+        if (startsNewLine)
         {
             NormalizeCurrentLineEnd();
             FlushCoreAndResetState();
@@ -254,6 +285,7 @@ internal sealed class TemplateTextWriter : IDisposable
             }
 
             if (nextLineState is CurrentLineState.CrAppended or CurrentLineState.LfAppended
+                    or CurrentLineState.CrLfAppended
                 && Options.AppendIndentationOnEmptyLines)
             {
                 _currentLine.Append(indentation);
@@ -262,37 +294,47 @@ internal sealed class TemplateTextWriter : IDisposable
         }
 
         if (_currentLineState is CurrentLineState.ValueAppended
-            && nextLineState is CurrentLineState.CrAppended or CurrentLineState.LfAppended)
+            && nextLineState is CurrentLineState.CrAppended or CurrentLineState.LfAppended
+                or CurrentLineState.CrLfAppended)
         {
             TrimCurrentLineEnd();
         }
     }
 
-    private void AfterAppend(CurrentLineState nextLineState)
-    {
-        if (nextLineState is CurrentLineState.LfAppended)
-        {
-            NormalizeCurrentLineEnd();
-            FlushCoreAndResetState();
-        }
-        else
-        {
-            _currentLineState = nextLineState;
-        }
-    }
+    private void AfterAppend(CurrentLineState nextLineState) => _currentLineState = nextLineState;
 
     private void BeforeClose()
     {
         AssertNotClosed();
 
-        if (_currentLineState is CurrentLineState.CrAppended or CurrentLineState.LfAppended)
+        if (_currentLineState is CurrentLineState.CrAppended or CurrentLineState.LfAppended
+            or CurrentLineState.CrLfAppended)
         {
-            NormalizeCurrentLineEnd();
+            if (Options.LastLineHandlingMode == LastLineHandlingMode.TrimNewLine)
+            {
+                RemoveCurrentLineEnd();
+            }
+            else
+            {
+                NormalizeCurrentLineEnd();
+            }
         }
 
         if (_currentLineState is CurrentLineState.ValueAppended)
         {
             TrimCurrentLineEnd();
+            if (Options.LastLineHandlingMode == LastLineHandlingMode.EnsureNewLine)
+            {
+                AppendLine();
+            }
+        }
+
+        if (_currentLineState is CurrentLineState.Empty)
+        {
+            if (Options.LastLineHandlingMode == LastLineHandlingMode.EnsureNewLine)
+            {
+                AppendLine();
+            }
         }
 
         FlushCoreAndResetState();
@@ -326,7 +368,7 @@ internal sealed class TemplateTextWriter : IDisposable
             NewLineFormat.CrLf => "\r\n",
             NewLineFormat.Lf => "\n",
             NewLineFormat.Cr => "\r",
-            _ => throw new ArgumentOutOfRangeException()
+            _ => throw new InvalidOperationException($"Unknown new line format {Options.NewLineFormat}")
         };
 
     private void TrimCurrentLineEnd()
@@ -359,19 +401,22 @@ internal sealed class TemplateTextWriter : IDisposable
             return;
         }
 
+        RemoveCurrentLineEnd();
+        _currentLine.Append(GetNewLine());
+    }
+
+    private void RemoveCurrentLineEnd()
+    {
         switch (_currentLine)
         {
             case [.., '\r', '\n']:
                 _currentLine.Length -= 2;
-                _currentLine.Append(GetNewLine());
                 break;
             case [.., '\r']:
                 _currentLine.Length -= 1;
-                _currentLine.Append(GetNewLine());
                 break;
             case [.., '\n']:
                 _currentLine.Length -= 1;
-                _currentLine.Append(GetNewLine());
                 break;
         }
     }
@@ -387,7 +432,8 @@ internal sealed class TemplateTextWriter : IDisposable
 
         _currentLine.Clear();
         _currentLineState = CurrentLineState.Empty;
-        _currentLineHandlingMode = CurrentLineHandlingMode.Normal;
+        _currentLineHandlingMode = _nextLineHandlingMode;
+        _nextLineHandlingMode = CurrentLineHandlingMode.Normal;
     }
 
     private bool ShouldWriteToOutput() =>
@@ -434,5 +480,7 @@ internal sealed class TemplateTextWriter : IDisposable
         public CurrentLineState CurrentLineState => owner._currentLineState;
 
         public CurrentLineHandlingMode CurrentLineHandling => owner._currentLineHandlingMode;
+
+        public CurrentLineHandlingMode NextLineHandling => owner._nextLineHandlingMode;
     }
 }

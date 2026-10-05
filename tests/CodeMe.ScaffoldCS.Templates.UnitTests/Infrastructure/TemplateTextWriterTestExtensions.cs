@@ -18,9 +18,23 @@ internal static class TemplateTextWriterTestExtensions
         return templateWriter;
     }
 
+    public static TemplateTextWriter WithSingleIndentation(this TemplateTextWriter templateWriter, string indentation)
+    {
+        templateWriter.Options = templateWriter.Options with { SingleIndentation = indentation.AsMemory() };
+        return templateWriter;
+    }
+
     public static TemplateTextWriter WithNewLineFormat(this TemplateTextWriter templateWriter, NewLineFormat format)
     {
         templateWriter.Options = templateWriter.Options with { NewLineFormat = format };
+        return templateWriter;
+    }
+
+    public static TemplateTextWriter WithLastLineHandlingMode(
+        this TemplateTextWriter templateWriter,
+        LastLineHandlingMode lastLine)
+    {
+        templateWriter.Options = templateWriter.Options with { LastLineHandlingMode = lastLine };
         return templateWriter;
     }
 

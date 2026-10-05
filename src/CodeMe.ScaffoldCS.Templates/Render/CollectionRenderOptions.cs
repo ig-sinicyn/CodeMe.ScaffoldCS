@@ -8,16 +8,16 @@ public record CollectionRenderOptions(
     int Alignment = 0,
     string? Format = null)
 {
-    public static readonly CollectionRenderOptions CommaSeparated = new(
-        Separator: ", ",
-        EmptyValue: Symbols.RemoveWhitespaceLine);
-
     public static readonly CollectionRenderOptions Multiline = new(
         Separator: Environment.NewLine,
         EmptyValue: Symbols.RemoveWhitespaceLine);
 
     public static readonly CollectionRenderOptions EmptyLineSeparated = new(
         Separator: Environment.NewLine + Environment.NewLine,
+        EmptyValue: Symbols.RemoveWhitespaceLine);
+
+    public static readonly CollectionRenderOptions CommaSeparated = new(
+        Separator: ", ",
         EmptyValue: Symbols.RemoveWhitespaceLine);
 
     public static readonly CollectionRenderOptions Default = Multiline;

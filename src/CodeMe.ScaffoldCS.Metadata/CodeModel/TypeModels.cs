@@ -8,35 +8,37 @@ public readonly record struct TypeName(
 }
 
 public record TypeInfo(
-    TypeName TypeName,
+    string Name,
+    string? Namespace,
     TypeRole Role,
     bool IsNullable,
     IReadOnlyList<TypeInfo> GenericArgs)
 {
     public static TypeInfo Primitive(string name) =>
         new(
-            TypeName: new TypeName(name),
+            name,
+            Namespace: null,
             Role: TypeRole.Primitive,
             IsNullable: false,
             []);
 
     internal static TypeInfo SystemPrimitive(string name, string? namespaceName = null) =>
         new(
-            TypeName: new TypeName(name, namespaceName ?? "System"),
+            name,
+            namespaceName ?? "System",
             Role: TypeRole.Primitive,
             IsNullable: false,
             []);
 
     public static TypeInfo Class(string name, string? namespaceName) =>
         new(
-            TypeName: new TypeName(name, namespaceName),
+            name,
+            namespaceName,
             Role: TypeRole.Dto,
             IsNullable: false,
             []);
 
-    public string Name => TypeName.Name;
-
-    public string? Namespace => TypeName.Namespace;
+    public TypeName TypeName => new(Name, Namespace);
 
     public override string ToString() => TypeName.ToString();
 }
@@ -57,24 +59,23 @@ public enum TypeRole
 }
 
 public record DtoModel(
-    TypeName TypeName,
+    string Name,
+    string? Namespace,
     TypeRole Role,
     string? Comment,
     IReadOnlyList<DtoField> Fields)
 {
-    public DtoModel(string name, string? namespaceName, string? comment, params DtoField[] fields)
-        : this(new TypeName(name, namespaceName), TypeRole.Dto, comment, fields)
-    {
-    }
-
     public DtoModel(string name, string? namespaceName, params DtoField[] fields)
-        : this(new TypeName(name, namespaceName), TypeRole.Dto, null, fields)
+        : this(name, namespaceName, TypeRole.Dto, null, fields)
     {
     }
 
-    public string Name => TypeName.Name;
+    public DtoModel(string name, string? namespaceName, string? comment, params DtoField[] fields)
+        : this(name, namespaceName, TypeRole.Dto, comment, fields)
+    {
+    }
 
-    public string? Namespace => TypeName.Namespace;
+    public TypeName TypeName => new(Name, Namespace);
 
     public override string ToString() => TypeName.ToString();
 }
@@ -88,21 +89,18 @@ public record DtoField(string Name, TypeInfo Type, string? Comment = null)
 
 public record DtoFieldInitializer(string Initializer);
 
-public record ServiceModel(TypeName TypeName, string? Comment, IReadOnlyCollection<ServiceMethod> Methods)
+public record ServiceModel(
+    string Name,
+    string? Namespace,
+    string? Comment,
+    IReadOnlyCollection<ServiceMethod> Methods)
 {
-    public ServiceModel(string name, string? namespaceName, string? comment, params ServiceMethod[] methods)
-        : this(new TypeName(name, namespaceName), comment, methods)
-    {
-    }
-
     public ServiceModel(string name, string? namespaceName, params ServiceMethod[] methods)
-        : this(new TypeName(name, namespaceName), null, methods)
+        : this(name, namespaceName, null, methods)
     {
     }
 
-    public string Name => TypeName.Name;
-
-    public string? Namespace => TypeName.Namespace;
+    public TypeName TypeName => new(Name, Namespace);
 
     public override string ToString() => TypeName.ToString();
 }

@@ -47,6 +47,28 @@ public class TemplateTextWriterTests
     }
 
     [Fact]
+    public void Empty_WithEnsureLastLine_ShouldBeExpected()
+    {
+        // Arrange
+        var writer = CreateTextWriter()
+            .WithLastLineHandlingMode(LastLineHandlingMode.EnsureNewLine);
+
+        // Assert
+        writer.ShouldBe(Environment.NewLine, beforeClose: "");
+    }
+
+    [Fact]
+    public void Empty_WithTrimLastLine_ShouldBeExpected()
+    {
+        // Arrange
+        var writer = CreateTextWriter()
+            .WithLastLineHandlingMode(LastLineHandlingMode.TrimNewLine);
+
+        // Assert
+        writer.ShouldBe("", beforeClose: "");
+    }
+
+    [Fact]
     public void Empty_WithIndentation_ShouldBeExpected()
     {
         // Arrange
@@ -55,6 +77,19 @@ public class TemplateTextWriterTests
 
         // Assert
         writer.ShouldBe("", beforeClose: "");
+    }
+
+    [Fact]
+    public void Empty_WithIndentationEnsureLastLine_ShouldBeExpected()
+    {
+        // Arrange
+        var writer = CreateTextWriter()
+            .WithNewLineFormat(NewLineFormat.Lf)
+            .WithIndentation("  // ")
+            .WithLastLineHandlingMode(LastLineHandlingMode.EnsureNewLine);
+
+        // Assert
+        writer.ShouldBe("  //\n", beforeClose: "");
     }
 
     [Fact]
@@ -145,6 +180,21 @@ public class TemplateTextWriterTests
 
         // Assert
         writer.ShouldBe("Hello,\nworld!", beforeClose: "Hello,\n");
+    }
+
+    [Fact]
+    public void NormalText_Multiline_EnsureLastLine_ShouldBeExpected()
+    {
+        // Arrange
+        var writer = CreateTextWriter()
+            .WithNewLineFormat(NewLineFormat.Lf)
+            .WithLastLineHandlingMode(LastLineHandlingMode.EnsureNewLine);
+
+        // Act
+        writer.Append("Hello,\r\nworld!");
+
+        // Assert
+        writer.ShouldBe("Hello,\nworld!\n", beforeClose: "Hello,\n");
     }
 
     [Fact]
@@ -248,6 +298,32 @@ public class TemplateTextWriterTests
               //
               // world!
             
+            """);
+    }
+
+    [Fact]
+    public void NormalText_MultilineLiteral_WithIndentation_TrimLastLine_ShouldBeExpected()
+    {
+        // Arrange
+        var writer = CreateTextWriter()
+            .WithIndentation("  // ")
+            .WithLastLineHandlingMode(LastLineHandlingMode.TrimNewLine);
+
+        // Act
+        writer.Append(
+            """
+            Hello,
+
+            world!
+
+            """);
+
+        // Assert
+        writer.ShouldBe(
+            """
+              // Hello,
+              //
+              // world!
             """);
     }
 
@@ -776,6 +852,27 @@ public class TemplateTextWriterTests
         writer
             .SetCurrentLineHandling(CurrentLineHandlingMode.Ignore)
             .Append("Hello");
+
+        // Assert
+        writer.ShouldBe("", beforeClose: "");
+    }
+
+    [Fact]
+    public void SetCurrentLineHandling_Empty_ShouldBeExpected()
+    {
+        // Arrange
+        var writer = CreateTextWriter()
+            .WithNewLineFormat(NewLineFormat.Lf);
+
+        // Act
+        writer
+            .SetCurrentLineHandling(CurrentLineHandlingMode.Ignore)
+            .Append("\n")
+            .SetCurrentLineHandling(CurrentLineHandlingMode.Ignore)
+            .Append("\n")
+            .SetCurrentLineHandling(CurrentLineHandlingMode.Ignore)
+            .Append("\n")
+            .SetCurrentLineHandling(CurrentLineHandlingMode.Ignore);
 
         // Assert
         writer.ShouldBe("", beforeClose: "");

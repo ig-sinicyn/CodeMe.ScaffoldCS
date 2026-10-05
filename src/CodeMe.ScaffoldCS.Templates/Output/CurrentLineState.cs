@@ -10,5 +10,7 @@ internal enum CurrentLineState
 
     LfAppended,
 
+    CrLfAppended,
+
     Closed
 }
