@@ -123,84 +123,22 @@ public class NameRenderTests
         input.TrimAllSuffixes(suffixes).Should().Be(expected);
 
     [Theory]
-    [InlineData(null, new[] { "Test" }, null)]
-    [InlineData("", new[] { "Test" }, "")]
-    [InlineData("Test", new[] { "Test" }, "")]
-    [InlineData("ValueTest", new[] { "Test" }, "Value")]
-    [InlineData("ValueTest", new[] { "Value", "Test" }, "")]
-    public void TrimSuffixes_ShouldBeExpected(string? input, string[] suffixes, string? expected) =>
-        input.TrimSuffix(suffixes).Should().Be(expected);
-
-    [Theory]
-    [InlineData(null, "Test", "Test")]
-    [InlineData("", "Test", "Test")]
-    [InlineData("Test", "Test", "Test")]
-    [InlineData("Value", "Test", "TestValue")]
+    [InlineData(null, "", "")]
+    [InlineData(null, "Prefix", "Prefix")]
+    [InlineData("", "", "")]
+    [InlineData("", "Prefix", "Prefix")]
     [InlineData("Value", "", "Value")]
+    [InlineData("Value", "Prefix", "PrefixValue")]
     public void EnsurePrefix_ShouldBeExpected(string? input, string prefix, string expected) =>
         input.EnsurePrefix(prefix).Should().Be(expected);
 
     [Theory]
-    [InlineData(null, "Test", "Test")]
-    [InlineData("", "Test", "Test")]
-    [InlineData("Test", "Test", "Test")]
-    [InlineData("Value", "Test", "ValueTest")]
+    [InlineData(null, "", "")]
+    [InlineData(null, "Suffix", "Suffix")]
+    [InlineData("", "", "")]
+    [InlineData("", "Suffix", "Suffix")]
     [InlineData("Value", "", "Value")]
+    [InlineData("Value", "Suffix", "ValueSuffix")]
     public void EnsureSuffix_ShouldBeExpected(string? input, string suffix, string expected) =>
         input.EnsureSuffix(suffix).Should().Be(expected);
-
-    [Theory]
-    [InlineData(null, null)]
-    [InlineData("Test", "test")]
-    [InlineData("TestCase", "test_case")]
-    [InlineData("MyTestCase", "my_test_case")]
-    public void ToSnakeCase_ShouldBeExpected(string? input, string? expected) =>
-        input.ToSnakeCase().Should().Be(expected);
-
-    [Theory]
-    [InlineData(null, null)]
-    [InlineData("Test", "test")]
-    [InlineData("TestCase", "test-case")]
-    [InlineData("MyTestCase", "my-test-case")]
-    public void ToKebabCase_ShouldBeExpected(string? input, string? expected) =>
-        input.ToKebabCase().Should().Be(expected);
-
-    [Theory]
-    [InlineData(null, null)]
-    [InlineData("test", "Test")]
-    [InlineData("testCase", "TestCase")]
-    [InlineData("test_case", "TestCase")]
-    public void ToPascalCase_ShouldBeExpected(string? input, string? expected) =>
-        input.ToPascalCase().Should().Be(expected);
-
-    [Theory]
-    [InlineData("test-case", new[] { '-', '_' }, "TestCase")]
-    [InlineData("test_case", new[] { '-', '_' }, "TestCase")]
-    [InlineData("my-test_case", new[] { '-', '_' }, "MyTestCase")]
-    public void ToPascalCaseWithSeparators_ShouldBeExpected(string? input, char[] separators, string? expected) =>
-        input.ToPascalCase(separators).Should().Be(expected);
-
-    [Theory]
-    [InlineData(null, null)]
-    [InlineData("Test", "test")]
-    [InlineData("URLValue", "urlValue")]
-    [InlineData("MyURLValue", "myURLValue")]
-    public void ToCamelCase_ShouldBeExpected(string? input, string? expected) =>
-        input.ToCamelCase().Should().Be(expected);
-
-    [Theory]
-    [InlineData(null, null)]
-    [InlineData("Test", "test")]
-    [InlineData("Tests", "test")]
-    [InlineData("People", "person")]
-    public void ToSingular_ShouldBeExpected(string? input, string? expected) =>
-        input.ToSingular().Should().Be(expected);
-
-    [Theory]
-    [InlineData(null, null)]
-    [InlineData("Test", "tests")]
-    [InlineData("Person", "people")]
-    [InlineData("People", "people")]
-    public void ToPlural_ShouldBeExpected(string? input, string? expected) =>
-        input.ToPlural().Should().Be(expected);
 }

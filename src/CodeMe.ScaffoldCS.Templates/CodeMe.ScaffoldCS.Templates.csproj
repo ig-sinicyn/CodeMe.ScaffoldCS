@@ -9,7 +9,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="CodeMe.Basics" />
-		<PackageReference Include="Humanizer" />
 	</ItemGroup>
 
 </Project>

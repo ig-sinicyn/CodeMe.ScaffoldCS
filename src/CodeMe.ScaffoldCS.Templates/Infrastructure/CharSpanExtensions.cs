@@ -35,4 +35,11 @@ internal static class CharSpanExtensions
         var index = span.IndexOfAny('\r', '\n');
         return index >= 0;
     }
+
+    public static string ToReversedString(this ReadOnlySpan<char> span) => string.Create(
+        span.Length, span, (chars, source) =>
+        {
+            source.CopyTo(chars);
+            chars.Reverse();
+        });
 }
