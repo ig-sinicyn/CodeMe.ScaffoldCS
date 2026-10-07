@@ -6,6 +6,16 @@ namespace CodeMe.ScaffoldCS.Templates.UnitTests;
 
 using static SymbolsCS;
 
+public class PaddedTemplateTests
+{
+    [Fact]
+    public void TestScenario_ShouldBeExpected() => TestIt($"{1},{2,Padding.Left:D5}");
+
+    private void TestIt(PaddedTemplatePart x)
+    {
+    }
+}
+
 public class TemplateTests
 {
     private static readonly Class _testDto = new(

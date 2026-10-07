@@ -8,6 +8,7 @@ Have a good scenarios:
 * Add api for column-level padding. Func to PaddedTemplatePart?
   * Need both options.
 * Split template / text writer options
+* Support for spans for template part
 
 Waits for grooming:
 * Value handling customizations. Interceptors?

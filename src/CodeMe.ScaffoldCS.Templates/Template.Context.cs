@@ -95,6 +95,8 @@ public partial class Template
     public readonly struct OptionsScope(Template owner, TemplateTextWriterOptions oldOptions)
         : ITemplateScope, IDisposable
     {
+        public bool IsSame(Template caller) => ReferenceEquals(caller, owner);
+
         public void DisposeIfSame(Template caller)
         {
             if (ReferenceEquals(caller, owner))

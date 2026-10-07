@@ -353,13 +353,8 @@ internal sealed class TemplateTextWriter : IDisposable
         }
     }
 
-    private void AssertNotClosed()
-    {
-        if (_currentLineState == CurrentLineState.Closed)
-        {
-            throw new ObjectDisposedException("Cannot append text to closed template");
-        }
-    }
+    private void AssertNotClosed() =>
+        ObjectDisposedException.ThrowIf(_currentLineState == CurrentLineState.Closed, GetType());
 
     private string GetNewLine() =>
         Options.NewLineFormat switch

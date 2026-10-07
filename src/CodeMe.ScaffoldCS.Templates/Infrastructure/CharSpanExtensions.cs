@@ -2,6 +2,15 @@
 
 internal static class CharSpanExtensions
 {
+    public static int NextIndexOf(
+        this ReadOnlySpan<char> span,
+        int startIndex,
+        char value)
+    {
+        var index = span[startIndex..].IndexOf(value);
+        return index < 0 ? index : startIndex + index;
+    }
+
     public static int NextIndexOfAny(
         this ReadOnlySpan<char> span,
         int startIndex,
@@ -9,6 +18,15 @@ internal static class CharSpanExtensions
         char value1)
     {
         var index = span[startIndex..].IndexOfAny(value0, value1);
+        return index < 0 ? index : startIndex + index;
+    }
+
+    public static int NextIndexOfAny(
+        this ReadOnlySpan<char> span,
+        int startIndex,
+        params Span<char> separators)
+    {
+        var index = span[startIndex..].IndexOfAny(separators);
         return index < 0 ? index : startIndex + index;
     }
 
