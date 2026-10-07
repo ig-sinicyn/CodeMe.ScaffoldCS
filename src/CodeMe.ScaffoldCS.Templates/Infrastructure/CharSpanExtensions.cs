@@ -24,7 +24,7 @@ internal static class CharSpanExtensions
     public static int NextIndexOfAny(
         this ReadOnlySpan<char> span,
         int startIndex,
-        params Span<char> separators)
+        params ReadOnlySpan<char> separators)
     {
         var index = span[startIndex..].IndexOfAny(separators);
         return index < 0 ? index : startIndex + index;
