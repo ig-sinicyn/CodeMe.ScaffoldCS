@@ -6,7 +6,7 @@ namespace CodeMe.ScaffoldCS.Templates.Render;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public static class SymbolsCS
 {
-    public static readonly ValueSymbol<string> NL = Symbols.NewLine;
+    public static readonly NewLineSymbol NL = Symbols.NewLine;
 
     public static readonly ClearLineSymbol CL = Symbols.ClearLine;
 
@@ -32,7 +32,10 @@ public static class SymbolsCS
         [InterpolatedStringHandlerArgument(nameof(condition))] IfTrueTemplatePart<T> trueValue) =>
         Symbols.Iif(condition, trueValue);
 
-    public static ConditionSymbol<TTrue, TFalse> IIF<T, TTrue, TFalse>(T condition, TTrue trueValue, TFalse falseValue) =>
+    public static ConditionSymbol<TTrue, TFalse> IIF<T, TTrue, TFalse>(
+        T condition,
+        TTrue trueValue,
+        TFalse falseValue) =>
         Symbols.Iif(condition, trueValue, falseValue);
 
     public static ConditionSymbol<IfTrueTemplatePart<T>, IfFalseTemplatePart<T>> IIF<T>(

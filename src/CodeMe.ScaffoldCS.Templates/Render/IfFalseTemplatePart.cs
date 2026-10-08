@@ -4,7 +4,7 @@ using CodeMe.ScaffoldCS.Templates.Internals;
 namespace CodeMe.ScaffoldCS.Templates.Render;
 
 [InterpolatedStringHandler]
-public readonly struct IfFalseTemplatePart<TCondition> : ITemplateScope
+public readonly struct IfFalseTemplatePart<TCondition> : ITemplatePart
 {
     private readonly Template _template;
     private readonly Template.OptionsScope _scope;
@@ -55,6 +55,12 @@ public readonly struct IfFalseTemplatePart<TCondition> : ITemplateScope
         _template.Write(value);
 
     public void AppendFormatted(string? value, int alignment) =>
+        _template.Write(value, alignment);
+
+    public void AppendFormatted(Span<char> value) =>
+        _template.Write(value);
+
+    public void AppendFormatted(Span<char> value, int alignment) =>
         _template.Write(value, alignment);
 
     public void AppendFormatted(Action<Template> callback) =>

@@ -16,6 +16,10 @@ public interface ITemplatePart : ITemplateScope
 
     void AppendFormatted(string? value, int alignment);
 
+    void AppendFormatted(Span<char> value);
+
+    void AppendFormatted(Span<char> value, int alignment);
+
     void AppendFormatted(Action<Template> callback);
 
     void AppendFormatted(Func<TemplatePart> callback);

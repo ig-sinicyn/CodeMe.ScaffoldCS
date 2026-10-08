@@ -8,7 +8,7 @@ public static class Symbols
 {
     private static readonly CurrentLineHandlingMode _macroLineHandling = CurrentLineHandlingMode.IgnoreIfWhiteSpace;
 
-    public static readonly ValueSymbol<string> NewLine = new(Environment.NewLine);
+    public static readonly NewLineSymbol NewLine = new();
 
     public static readonly ClearLineSymbol ClearLine = new();
 

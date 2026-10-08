@@ -11,7 +11,7 @@ public static class Padding
 }
 
 [InterpolatedStringHandler]
-public readonly struct PaddedTemplatePart : ITemplateScope
+public readonly struct PaddedTemplatePart : ITemplatePart
 {
     private readonly Template _template;
     private readonly Template.OptionsScope _scope;
@@ -49,6 +49,12 @@ public readonly struct PaddedTemplatePart : ITemplateScope
         _template.Write(value);
 
     public void AppendFormatted(string? value, int alignment) =>
+        _template.Write(value, alignment);
+
+    public void AppendFormatted(Span<char> value) =>
+        _template.Write(value);
+
+    public void AppendFormatted(Span<char> value, int alignment) =>
         _template.Write(value, alignment);
 
     public void AppendFormatted(Action<Template> callback) =>
