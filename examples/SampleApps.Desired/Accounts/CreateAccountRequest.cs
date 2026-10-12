@@ -1,9 +1,8 @@
 ﻿namespace SampleApps.Desired.Accounts;
 
 /// <summary>
-/// Account details.
+/// Account details (create request).
 /// </summary>
-/// <param name="Id">User Id.</param>
 /// <param name="Login">User login.</param>
 /// <param name="Name">User name.</param>
-public record CreateAccountRequest(Guid Id, string Login, string Name);
+public record CreateAccountRequest(string Login, string Name);

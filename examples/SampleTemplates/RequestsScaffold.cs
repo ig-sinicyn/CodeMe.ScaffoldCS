@@ -20,6 +20,7 @@ public class RequestsScaffold : IScaffoldStartup
             .AddCSharpSource(options.ModelPath);
 
         services.AddScaffold()
-            .AddScaffoldPart<CreateRequestFile>();
+            .AddScaffoldPart<CreateRequestFile>()
+            .AddScaffoldPart<UpdateRequestFile>();
     }
 }
