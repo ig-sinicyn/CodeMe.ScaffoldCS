@@ -23,6 +23,8 @@ public abstract class ScaffoldFileBase : IScaffoldPart
         try
         {
             Context = context;
+            BeforeRender();
+
             var file = await context.GetOrCreateFileAsync(FileName, cancellation);
             var options = CreateTemplateOptions(context.RenderOptions);
 
@@ -34,11 +36,21 @@ public abstract class ScaffoldFileBase : IScaffoldPart
             }
 
             file.Content = output.ToString();
+
+            AfterRender();
         }
         finally
         {
             Context = prev;
         }
+    }
+
+    protected virtual void BeforeRender()
+    {
+    }
+
+    protected virtual void AfterRender()
+    {
     }
 
     protected virtual TemplateTextWriterOptions CreateTemplateOptions(ScaffoldRenderOptions options)

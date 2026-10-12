@@ -39,6 +39,10 @@ public struct StructWithNullableStringProperty
     public string? Value => null;
 }
 
+/// <summary>
+/// Record comment.
+/// </summary>
+/// <param name="Value">Value comment.</param>
 public record RecordWithEmptyDtoProperty(EmptyDto Value);
 
 public record RecordWithInitializedStringProperty(string Value = "Hello there!");

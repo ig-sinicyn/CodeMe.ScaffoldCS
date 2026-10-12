@@ -35,8 +35,8 @@ Delayed:
 # Metamodel issues
 
 * Metadata accessibility modifiers
-* Metadata default values
-* Metadata arg comments (records)
+* Metadata default values (recheck, looks like implemented)
+* Metadata arg comments (records) (recheck, looks like implemented)
 * Implicit usings + using declarations for type aliases.
 * ToString methods to ease metadata model append
 

@@ -1,4 +1,4 @@
-﻿namespace CodeMe.ScaffoldCS.Metadata.CSharp;
+﻿namespace CodeMe.ScaffoldCS.Metadata.Internals;
 
 public static class PathHelper
 {

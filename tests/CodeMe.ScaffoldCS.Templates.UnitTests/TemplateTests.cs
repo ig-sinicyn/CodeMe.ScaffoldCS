@@ -28,10 +28,14 @@ public class TemplateTests
         // Act
         writer.Write(
             $$"""
+            {{
+                COMMENT(
+                    "This template should render DTO as C# class")
+            }}
             using System;
             
             namespace TestModels;
-            
+
             {{IF(dto.Comment)}}
             /// <summary>
             /// {{dto.Comment}}.
@@ -44,6 +48,7 @@ public class TemplateTests
             """);
 
         // Assert
+        // language=c#
         writer.ShouldBe(
             """
             using System;
@@ -99,6 +104,7 @@ public class TemplateTests
             """);
 
         // Assert
+        // language=c#
         writer.ShouldBe(
             """
             using System;
@@ -143,6 +149,7 @@ public class TemplateTests
             """);
 
         // Assert
+        // language=c#
         writer.ShouldBe(
             """
             using System;
@@ -187,6 +194,7 @@ public class TemplateTests
             """);
 
         // Assert
+        // language=c#
         writer.ShouldBe(
             """
             using System;
@@ -231,6 +239,7 @@ public class TemplateTests
             """);
 
         // Assert
+        // language=c#
         writer.ShouldBe(
             """
             using System;

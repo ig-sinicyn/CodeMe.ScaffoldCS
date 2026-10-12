@@ -19,6 +19,8 @@ public static class Symbols
 
     public static readonly LineHandlingSymbol RemoveWhitespaceLine = new(CurrentLineHandlingMode.IgnoreIfWhiteSpace);
 
+    public static LineHandlingSymbol Comment(string comment) => new(_macroLineHandling);
+
     public static ConditionBranchSymbol If<T>(T condition) => new(
         ConditionBranch.IfBranch, Conditions.HasValue(condition), _macroLineHandling);
 

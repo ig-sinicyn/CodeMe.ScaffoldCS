@@ -17,6 +17,8 @@ public static class SymbolsCS
 
     public static readonly LineHandlingSymbol RWL = Symbols.RemoveWhitespaceLine;
 
+    public static LineHandlingSymbol COMMENT(string comment) => Symbols.Comment(comment);
+
     public static ConditionBranchSymbol IF<T>(T value) => Symbols.If(value);
 
     public static ConditionBranchSymbol ELSEIF<T>(T value) => Symbols.ElseIf(value);

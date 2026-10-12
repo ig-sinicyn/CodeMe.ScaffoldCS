@@ -52,6 +52,7 @@ internal static class CSharpModelParser
     public static DtoModel ParseDto(BaseTypeDeclarationSyntax declaration, CSharpCompilation compilation) =>
         declaration switch
         {
+            RecordDeclarationSyntax x => ParseDto(x, compilation),
             TypeDeclarationSyntax x => ParseDto(x, compilation),
             EnumDeclarationSyntax x => ParseDto(x, compilation),
             _ => throw new InvalidOperationException($"Unsupported declaration {declaration.GetType().Name}")
@@ -67,10 +68,31 @@ internal static class CSharpModelParser
         var fields = declaration.Members
             .OfType<PropertyDeclarationSyntax>()
             .Select(x => ParseDtoField(x, compilation));
-        if (declaration is RecordDeclarationSyntax { ParameterList: { } parameterList })
+
+        return new DtoModel(
+            symbol.Name,
+            symbol.Namespace,
+            TypeRole.Dto,
+            symbol.GetDocumentationSummary(),
+            fields.ToArray());
+    }
+
+    private static DtoModel ParseDto(RecordDeclarationSyntax declaration, CSharpCompilation compilation)
+    {
+        var model = compilation.GetSemanticModel(declaration.SyntaxTree);
+        var symbol = model.GetDeclaredSymbol(declaration)
+            ?? throw new InvalidOperationException(
+                $"Unable to resolve the target type '{declaration.Name}'.");
+        var comment = symbol.GetMethodDocumentationSummary();
+
+        var fields = declaration.Members
+            .OfType<PropertyDeclarationSyntax>()
+            .Select(x => ParseDtoField(x, compilation));
+
+        if (declaration is { ParameterList: { } parameterList })
         {
             var parameters = parameterList.Parameters
-                .Select(x => ParseDtoField(x, compilation));
+                .Select(x => ParseDtoField(x, comment.Parameters, compilation));
 
             fields = parameters.Concat(fields);
         }
@@ -79,7 +101,7 @@ internal static class CSharpModelParser
             symbol.Name,
             symbol.Namespace,
             TypeRole.Dto,
-            symbol.GetDocumentationSummary(),
+            comment.Summary,
             fields.ToArray());
     }
 
@@ -133,6 +155,7 @@ internal static class CSharpModelParser
 
     private static DtoField ParseDtoField(
         ParameterSyntax declaration,
+        IReadOnlyDictionary<string, string> comments,
         CSharpCompilation compilation)
     {
         var model = compilation.GetSemanticModel(declaration.SyntaxTree);
@@ -146,7 +169,7 @@ internal static class CSharpModelParser
         return new DtoField(
             symbol.Name,
             Resolve(type, model),
-            symbol.GetDocumentationSummary())
+            comments.GetValueOrDefault(symbol.Name))
         {
             DefaultValue = symbol.HasExplicitDefaultValue ? symbol.ExplicitDefaultValue : null
         };

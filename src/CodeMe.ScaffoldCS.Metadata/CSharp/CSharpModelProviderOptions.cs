@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using CodeMe.ScaffoldCS.Metadata.Internals;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace CodeMe.ScaffoldCS.Metadata.CSharp;
 

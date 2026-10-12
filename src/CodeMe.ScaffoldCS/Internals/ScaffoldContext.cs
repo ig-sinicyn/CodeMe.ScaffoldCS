@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using CodeMe.ScaffoldCS.Metadata.CSharp;
+using CodeMe.ScaffoldCS.Metadata.Internals;
 using Microsoft.Extensions.Options;
 
 namespace CodeMe.ScaffoldCS.Internals;

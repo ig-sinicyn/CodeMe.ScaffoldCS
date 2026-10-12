@@ -10,9 +10,9 @@ namespace SampleTemplates;
 
 public class CreateRequestFile(
     ICSharpModelProvider codeModelProvider,
-    IOptions<ScaffoldOptions> options) : ScaffoldFileBase
+    IOptions<ScaffoldOptions> options) : ScaffoldFileBase<DtoModel>
 {
-    private DtoModel GetModel()
+    protected override DtoModel CreateModel()
     {
         var model = codeModelProvider.GetDtoByFile(options.Value.ModelPath!);
 
@@ -24,34 +24,34 @@ public class CreateRequestFile(
 
         model = model with
         {
-            Name = $"Create{model.Name}Request",
+            Name = $"Create{model.Name.TrimSuffix("Info")}Request",
             Fields = fields
         };
 
         return model;
     }
 
-    protected override string FileName => "CreateRequest.cs";
+    protected override string FileName => $"{Model.Name}.cs";
 
     protected override void Render(Template template)
     {
-        var model = GetModel();
-        var fields = model.Fields;
+        var fields = Model.Fields;
 
         template.Write(
             $$"""
-            namespace {{model.Namespace}};
+            namespace {{Model.Namespace}};
             
-            {{IF(model.Comment)}}
+            {{IF(Model.Comment)}}
             /// <summary>
-            /// {{model.Comment}}
+            /// {{Model.Comment}}
             /// </summary>
             {{ENDIF}}
             {{
-                fields.WhereHasValue(x => x.Comment)
+                fields
+                    .WhereHasValue(x => x.Comment)
                     .Render(x => $"""/// <param name="{x.Name}">{x.Comment}</param>""")
             }}
-            public record {{model.Name}}({{
+            public record {{Model.Name}}({{
                 fields.RenderCommaSeparated(x => $"{x.Type.Name} {x.Name}")
             }});
             """);

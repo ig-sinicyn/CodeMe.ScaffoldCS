@@ -73,7 +73,8 @@ public sealed class CSharpModelProviderTests
         new DtoModel(
             "RecordWithEmptyDtoProperty",
             "Tests",
-            new DtoField("Value", Class("EmptyDto", "Tests"))));
+            "Record comment.",
+            new DtoField("Value", Class("EmptyDto", "Tests"), "Value comment.")));
 
     [Fact]
     public void RecordWithInitializedStringProperty_ShouldBeExpected() => Assert(
