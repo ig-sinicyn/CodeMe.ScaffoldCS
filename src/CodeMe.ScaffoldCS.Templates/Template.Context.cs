@@ -92,19 +92,8 @@ public partial class Template
         ShouldWrite = current.ConditionMet;
     }
 
-    public readonly struct OptionsScope(Template owner, TemplateTextWriterOptions oldOptions)
-        : ITemplateScope, IDisposable
+    public readonly struct OptionsScope(Template owner, TemplateTextWriterOptions oldOptions) : IDisposable
     {
-        public bool IsSame(Template caller) => ReferenceEquals(caller, owner);
-
-        public void DisposeIfSame(Template caller)
-        {
-            if (ReferenceEquals(caller, owner))
-            {
-                Dispose();
-            }
-        }
-
         // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
         public void Dispose() => owner?.CompleteScope(oldOptions);
     }

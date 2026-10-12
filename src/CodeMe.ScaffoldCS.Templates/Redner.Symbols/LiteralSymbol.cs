@@ -1,6 +1,6 @@
 ﻿using CodeMe.ScaffoldCS.Templates.Internals;
 
-namespace CodeMe.ScaffoldCS.Templates.Render;
+namespace CodeMe.ScaffoldCS.Templates.Redner.Symbols;
 
 public readonly struct LiteralSymbol(string? value) : ITemplateSymbol
 {

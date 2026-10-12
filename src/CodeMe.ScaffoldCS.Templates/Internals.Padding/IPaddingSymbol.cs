@@ -6,5 +6,5 @@ public interface IPaddingSymbol : ITemplateSymbol
 {
     IPaddingColumn? Column { get; set; }
 
-    int EstimateWidth(IFormatProvider? formatProvider, StringBuilder buffer);
+    int EstimateWidth(IFormatProvider? formatProvider, StringBuilder? buffer = null);
 }

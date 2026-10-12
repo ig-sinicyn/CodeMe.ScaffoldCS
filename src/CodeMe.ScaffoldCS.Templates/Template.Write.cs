@@ -49,6 +49,26 @@ public partial class Template
         return this;
     }
 
+    public Template WriteLiteral(ReadOnlyMemory<string> value)
+    {
+        if (ShouldWrite)
+        {
+            _writer.Append(value);
+        }
+
+        return this;
+    }
+
+    public Template WriteLiteral(ReadOnlySpan<char> value)
+    {
+        if (ShouldWrite)
+        {
+            _writer.Append(value);
+        }
+
+        return this;
+    }
+
     public Template Write(string? value)
     {
         Write(value.AsSpan());
@@ -112,7 +132,15 @@ public partial class Template
     {
         if (ShouldWrite)
         {
-            _writer.Append(value, alignment);
+            if (value.IsMultiline())
+            {
+                using var _ = BeginOptionsScope(IndentationFormat.CurrentLine);
+                _writer.Append(value, alignment);
+            }
+            else
+            {
+                _writer.Append(value, alignment);
+            }
         }
 
         return this;
@@ -151,7 +179,6 @@ public partial class Template
         return this;
     }
 
-    // TODO: dictionary symbol
     public Template Write<T>(IEnumerable<T> value)
     {
         if (ShouldWrite)
@@ -177,25 +204,12 @@ public partial class Template
         return this;
     }
 
-    public Template Write([InterpolatedStringHandlerArgument("")] TemplatePart value)
-    {
-        ((ITemplateScope)value).DisposeIfSame(this);
-
-        return this;
-    }
+    public Template Write([InterpolatedStringHandlerArgument("")] TemplatePart value) => this;
 
     public Template WriteLine([InterpolatedStringHandlerArgument("")] TemplatePart value)
     {
         Write(value);
         WriteLine();
-
-        return this;
-    }
-
-    internal Template CompleteScope<TScoped>(TScoped value)
-        where TScoped : ITemplateScope
-    {
-        value.DisposeIfSame(this);
 
         return this;
     }
@@ -230,12 +244,6 @@ public partial class Template
             return this;
         }
 
-        if (value is ITemplateScope)
-        {
-            ((ITemplateScope)value).DisposeIfSame(this);
-            return this;
-        }
-
         if (value is ITemplateSymbol)
         {
             if (ShouldWrite || value is IControlTemplateSymbol)
@@ -243,6 +251,11 @@ public partial class Template
                 ((ITemplateSymbol)value).Render(this);
             }
 
+            return this;
+        }
+
+        if (value is ITemplatePart)
+        {
             return this;
         }
 
@@ -280,12 +293,6 @@ public partial class Template
             return this;
         }
 
-        if (value is TemplatePart templatePart)
-        {
-            Write(templatePart);
-            return this;
-        }
-
         if (value is ITemplateSymbol)
         {
             if (ShouldWrite || value is IControlTemplateSymbol)
@@ -293,6 +300,11 @@ public partial class Template
                 ((ITemplateSymbol)value).Render(this);
             }
 
+            return this;
+        }
+
+        if (value is ITemplatePart)
+        {
             return this;
         }
 

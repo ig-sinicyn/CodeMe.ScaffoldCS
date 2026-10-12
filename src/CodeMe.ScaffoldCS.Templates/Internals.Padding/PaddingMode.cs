@@ -2,9 +2,13 @@
 
 public enum PaddingMode
 {
+    None,
+
+    Auto,
+
     Left,
 
-    Center,
+    Right,
 
-    Right
+    Center
 }

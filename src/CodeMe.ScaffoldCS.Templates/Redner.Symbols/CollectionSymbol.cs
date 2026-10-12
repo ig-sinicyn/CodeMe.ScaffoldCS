@@ -1,7 +1,8 @@
 ﻿using CodeMe.ScaffoldCS.Templates.Internals;
 using CodeMe.ScaffoldCS.Templates.Output;
+using CodeMe.ScaffoldCS.Templates.Render;
 
-namespace CodeMe.ScaffoldCS.Templates.Render;
+namespace CodeMe.ScaffoldCS.Templates.Redner.Symbols;
 
 public readonly struct CollectionSymbol<T>(
     IEnumerable<T> source,

@@ -6,12 +6,12 @@ public static class AmbientPaddingAccumulator
 {
     private static readonly ScopedAsyncLocal<PaddingAccumulator> _accumulatorStack = new();
 
-    internal static IDisposable BeginAccumulatorScope(PaddingAccumulator context) =>
-        _accumulatorStack.BeginScope(context);
+    internal static IDisposable BeginAccumulatorScope(PaddingAccumulator accumulator) =>
+        _accumulatorStack.BeginScope(accumulator);
 
-    public static Template Current => _templateStack.Current
+    public static PaddingAccumulator Current => _accumulatorStack.Current
         ?? throw new InvalidOperationException(
-            $"There is no ambient template. Call {nameof(Template)}.{nameof(Template.BeginAmbientScope)} to enable ambient templates");
+            $"There is no ambient accumulator. Call {nameof(PaddingAccumulator)}.{nameof(PaddingAccumulator.BeginAmbientScope)} to enable ambient accumulator");
 
-    public static Template? CurrentOrDefault => _templateStack.Current;
+    public static PaddingAccumulator? CurrentOrDefault => _accumulatorStack.Current;
 }

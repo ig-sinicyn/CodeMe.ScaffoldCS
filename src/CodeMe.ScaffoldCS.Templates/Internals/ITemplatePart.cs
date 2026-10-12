@@ -1,8 +1,10 @@
 ﻿namespace CodeMe.ScaffoldCS.Templates.Internals;
 
-public interface ITemplatePart : ITemplateScope
+public interface ITemplatePart
 {
     void AppendLiteral(string? value);
+
+    void AppendLiteral(ReadOnlySpan<char> value);
 
     void AppendFormatted<T>(T? value);
 
@@ -16,9 +18,9 @@ public interface ITemplatePart : ITemplateScope
 
     void AppendFormatted(string? value, int alignment);
 
-    void AppendFormatted(Span<char> value);
+    void AppendFormatted(ReadOnlySpan<char> value);
 
-    void AppendFormatted(Span<char> value, int alignment);
+    void AppendFormatted(ReadOnlySpan<char> value, int alignment);
 
     void AppendFormatted(Action<Template> callback);
 

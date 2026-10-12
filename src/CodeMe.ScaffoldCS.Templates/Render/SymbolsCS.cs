@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using CodeMe.ScaffoldCS.Templates.Redner.Symbols;
 
 namespace CodeMe.ScaffoldCS.Templates.Render;
 

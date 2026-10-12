@@ -11,7 +11,6 @@ internal sealed class TemplateTextWriter : IDisposable
     private StringBuilder.AppendInterpolatedStringHandler _currentLineFormatter;
     private CurrentLineState _currentLineState;
     private CurrentLineHandlingMode _currentLineHandlingMode;
-
     private CurrentLineHandlingMode _nextLineHandlingMode;
 
     public TemplateTextWriter(TextWriter output, TemplateTextWriterOptions? options = null, bool leaveOpen = false)

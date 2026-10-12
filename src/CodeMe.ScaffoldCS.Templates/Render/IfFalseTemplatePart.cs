@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using CodeMe.ScaffoldCS.Templates.Internals;
+using CodeMe.ScaffoldCS.Templates.Redner.Symbols;
 
 namespace CodeMe.ScaffoldCS.Templates.Render;
 
@@ -7,7 +8,6 @@ namespace CodeMe.ScaffoldCS.Templates.Render;
 public readonly struct IfFalseTemplatePart<TCondition> : ITemplatePart
 {
     private readonly Template _template;
-    private readonly Template.OptionsScope _scope;
 
     public IfFalseTemplatePart(
         int literalLength,
@@ -27,16 +27,12 @@ public readonly struct IfFalseTemplatePart<TCondition> : ITemplatePart
     {
         isEnabled = !Conditions.HasValue(condition);
         _template = template;
-        if (isEnabled)
-        {
-            _scope = template.BeginTemplatePartScope();
-        }
     }
 
-    void ITemplateScope.DisposeIfSame(Template caller) =>
-        _scope.DisposeIfSame(caller);
-
     public void AppendLiteral(string? value) =>
+        _template.WriteLiteral(value);
+
+    public void AppendLiteral(ReadOnlySpan<char> value) =>
         _template.WriteLiteral(value);
 
     public void AppendFormatted<T>(T? value) =>
@@ -49,7 +45,7 @@ public readonly struct IfFalseTemplatePart<TCondition> : ITemplatePart
         _template.Write(value, alignment, format);
 
     public void AppendFormatted<T>(T? value, string? format) =>
-        _template.Write(value, 0, format);
+        _template.Write(value, alignment: 0, format);
 
     public void AppendFormatted(string? value) =>
         _template.Write(value);
@@ -57,18 +53,18 @@ public readonly struct IfFalseTemplatePart<TCondition> : ITemplatePart
     public void AppendFormatted(string? value, int alignment) =>
         _template.Write(value, alignment);
 
-    public void AppendFormatted(Span<char> value) =>
+    public void AppendFormatted(ReadOnlySpan<char> value) =>
         _template.Write(value);
 
-    public void AppendFormatted(Span<char> value, int alignment) =>
+    public void AppendFormatted(ReadOnlySpan<char> value, int alignment) =>
         _template.Write(value, alignment);
 
     public void AppendFormatted(Action<Template> callback) =>
-        callback(_template);
+        _template.Write(new TemplateActionSymbol(callback));
 
     public void AppendFormatted(Func<TemplatePart> callback) =>
-        _template.Write(callback());
+        _template.Write(new TemplatePartSymbol(callback));
 
     public void AppendFormatted<T>(IEnumerable<T> values) =>
-        _template.Write(values);
+        _template.Write(values.Render(_template.DefaultCollectionRenderOptions));
 }

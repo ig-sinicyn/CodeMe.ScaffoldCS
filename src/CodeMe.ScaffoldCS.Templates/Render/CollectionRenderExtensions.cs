@@ -1,4 +1,5 @@
 ﻿using CodeMe.ScaffoldCS.Templates.Internals;
+using CodeMe.ScaffoldCS.Templates.Redner.Symbols;
 
 namespace CodeMe.ScaffoldCS.Templates.Render;
 

@@ -1,11 +1,10 @@
 ﻿using CodeMe.ScaffoldCS.Templates.Internals;
 
-namespace CodeMe.ScaffoldCS.Templates.Render;
+namespace CodeMe.ScaffoldCS.Templates.Redner.Symbols;
 
-public readonly struct ConditionSymbol<TTrue, TFalse>(
+public readonly struct ConditionSymbol<TTrue>(
     bool condition,
-    TTrue trueValue,
-    TFalse falseValue)
+    TTrue trueValue)
     : ITemplateSymbol
 {
     public void Render(Template template)
@@ -13,10 +12,6 @@ public readonly struct ConditionSymbol<TTrue, TFalse>(
         if (condition)
         {
             template.Write(trueValue);
-        }
-        else
-        {
-            template.Write(falseValue);
         }
     }
 }
