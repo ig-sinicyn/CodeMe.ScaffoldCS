@@ -1,13 +1,12 @@
 ﻿using System.Runtime.CompilerServices;
 using CodeMe.ScaffoldCS.Templates.Internals;
-using CodeMe.ScaffoldCS.Templates.Redner.Symbols;
 
 namespace CodeMe.ScaffoldCS.Templates.Render;
 
 [InterpolatedStringHandler]
 public readonly struct IfFalseTemplatePart<TCondition> : ITemplatePart
 {
-    private readonly Template _template;
+    private readonly ITemplate _template;
 
     public IfFalseTemplatePart(
         int literalLength,
@@ -21,7 +20,7 @@ public readonly struct IfFalseTemplatePart<TCondition> : ITemplatePart
     public IfFalseTemplatePart(
         int literalLength,
         int formattedCount,
-        Template template,
+        ITemplate template,
         TCondition condition,
         out bool isEnabled)
     {
@@ -60,11 +59,11 @@ public readonly struct IfFalseTemplatePart<TCondition> : ITemplatePart
         _template.Write(value, alignment);
 
     public void AppendFormatted(Action<Template> callback) =>
-        _template.Write(new TemplateActionSymbol(callback));
+        _template.Write(callback);
 
     public void AppendFormatted(Func<TemplatePart> callback) =>
-        _template.Write(new TemplatePartSymbol(callback));
+        _template.Write(callback);
 
     public void AppendFormatted<T>(IEnumerable<T> values) =>
-        _template.Write(values.Render(_template.DefaultCollectionRenderOptions));
+        _template.Write(values);
 }

@@ -1,21 +1,19 @@
 ﻿using System.Runtime.CompilerServices;
 using CodeMe.ScaffoldCS.Templates.Internals;
-using CodeMe.ScaffoldCS.Templates.Redner.Symbols;
-using CodeMe.ScaffoldCS.Templates.Render;
 
 namespace CodeMe.ScaffoldCS.Templates;
 
 [InterpolatedStringHandler]
 public readonly struct TemplatePart : ITemplatePart
 {
-    private readonly Template _template;
+    private readonly ITemplate _template;
 
     public TemplatePart(int literalLength, int formattedCount)
         : this(literalLength, formattedCount, AmbientTemplate.Current)
     {
     }
 
-    public TemplatePart(int literalLength, int formattedCount, Template template)
+    public TemplatePart(int literalLength, int formattedCount, ITemplate template)
     {
         _template = template;
     }
@@ -51,11 +49,11 @@ public readonly struct TemplatePart : ITemplatePart
         _template.Write(value, alignment);
 
     public void AppendFormatted(Action<Template> callback) =>
-        _template.Write(new TemplateActionSymbol(callback));
+        _template.Write(callback);
 
     public void AppendFormatted(Func<TemplatePart> callback) =>
-        _template.Write(new TemplatePartSymbol(callback));
+        _template.Write(callback);
 
     public void AppendFormatted<T>(IEnumerable<T> values) =>
-        _template.Write(values.Render(_template.DefaultCollectionRenderOptions));
+        _template.Write(values);
 }

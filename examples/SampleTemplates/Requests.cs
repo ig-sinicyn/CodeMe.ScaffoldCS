@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace SampleTemplates;
 
-public class RequestsScaffold : IScaffoldStartup
+public class Requests : IScaffoldStartup
 {
     public void Configure(IServiceCollection services, IConfiguration configuration)
     {

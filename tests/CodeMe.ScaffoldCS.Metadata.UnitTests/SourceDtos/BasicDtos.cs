@@ -34,7 +34,7 @@ public interface IInterfaceWithNullableGuidProperty
     public Guid? Value { get; set; }
 }
 
-public struct StructWithNullableStringProperty
+public readonly struct StructWithNullableStringProperty
 {
     public string? Value => null;
 }

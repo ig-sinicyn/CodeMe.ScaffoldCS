@@ -1,9 +1,9 @@
-﻿using CodeMe.ScaffoldCS;
-using CodeMe.ScaffoldCS.Metadata.CodeModel;
+﻿using CodeMe.ScaffoldCS.Metadata.CodeModel;
 using CodeMe.ScaffoldCS.Templates;
 using CodeMe.ScaffoldCS.Templates.Render;
+using static CodeMe.ScaffoldCS.Templates.Render.SymbolsCS;
 
-namespace SampleTemplates;
+namespace CodeMe.ScaffoldCS;
 
 public abstract class CSharpRecordFileBase : ScaffoldFileBase<DtoModel>
 {
@@ -17,14 +17,14 @@ public abstract class CSharpRecordFileBase : ScaffoldFileBase<DtoModel>
             $$"""
             namespace {{Model.Namespace}};
             
-            {{SymbolsCS.IF(Model.Comment)}}
+            {{IF(Model.Comment)}}
             /// <summary>
             /// {{Model.Comment}}
             /// </summary>
-            {{SymbolsCS.ENDIF}}
             {{fields
                 .WhereHasValue(x => x.Comment)
                 .Render(x => $"""/// <param name="{x.Name}">{x.Comment}</param>""")}}
+            {{ENDIF}}
             public record {{Model.Name}}({{fields.RenderCommaSeparated(x => $"{x.Type.Name} {x.Name}")}});
             """);
     }

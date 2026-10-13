@@ -12,6 +12,7 @@ public class CreateRequestFile(ICSharpModelProvider codeModelProvider, IOptions<
     protected override DtoModel CreateModel()
     {
         var model = codeModelProvider.GetDtoByFile(options.Value.ModelPath!);
+
         var comment = model.Comment?.TrimEnd('.');
         comment = string.IsNullOrEmpty(comment)
             ? model.Comment
