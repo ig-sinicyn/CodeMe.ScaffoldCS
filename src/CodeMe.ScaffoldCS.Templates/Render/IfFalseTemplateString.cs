@@ -4,11 +4,11 @@ using CodeMe.ScaffoldCS.Templates.Internals;
 namespace CodeMe.ScaffoldCS.Templates.Render;
 
 [InterpolatedStringHandler]
-public readonly struct IfTrueTemplatePart<TCondition> : ITemplatePart
+public readonly struct IfFalseTemplateString<TCondition> : IInterpolatedString
 {
-    private readonly ITemplate _template;
+    private readonly ITemplateWriter _template;
 
-    public IfTrueTemplatePart(
+    public IfFalseTemplateString(
         int literalLength,
         int formattedCount,
         TCondition condition,
@@ -17,14 +17,14 @@ public readonly struct IfTrueTemplatePart<TCondition> : ITemplatePart
     {
     }
 
-    public IfTrueTemplatePart(
+    public IfFalseTemplateString(
         int literalLength,
         int formattedCount,
-        ITemplate template,
+        ITemplateWriter template,
         TCondition condition,
         out bool isEnabled)
     {
-        isEnabled = Conditions.HasValue(condition);
+        isEnabled = !Conditions.HasValue(condition);
         _template = template;
     }
 
@@ -61,7 +61,7 @@ public readonly struct IfTrueTemplatePart<TCondition> : ITemplatePart
     public void AppendFormatted(Action<Template> callback) =>
         _template.Write(callback);
 
-    public void AppendFormatted(Func<TemplatePart> callback) =>
+    public void AppendFormatted(Func<TemplateString> callback) =>
         _template.Write(callback);
 
     public void AppendFormatted<T>(IEnumerable<T> values) =>

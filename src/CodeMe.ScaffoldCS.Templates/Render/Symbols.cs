@@ -2,6 +2,7 @@
 using CodeMe.ScaffoldCS.Templates.Internals;
 using CodeMe.ScaffoldCS.Templates.Output;
 using CodeMe.ScaffoldCS.Templates.Redner.Symbols;
+using CodeMe.ScaffoldCS.Templates.Render.Parts;
 
 namespace CodeMe.ScaffoldCS.Templates.Render;
 
@@ -22,21 +23,21 @@ public static class Symbols
     public static LineHandlingSymbol Comment(string comment) => new(_macroLineHandling);
 
     public static ConditionBranchSymbol If<T>(T condition) => new(
-        ConditionBranch.IfBranch, Conditions.HasValue(condition), _macroLineHandling);
+        (ConditionBranch)ConditionBranch.IfBranch, Conditions.HasValue(condition), (CurrentLineHandlingMode?)_macroLineHandling);
 
     public static ConditionBranchSymbol ElseIf<T>(T condition) => new(
-        ConditionBranch.ElseIfBranch, Conditions.HasValue(condition), _macroLineHandling);
+        (ConditionBranch)ConditionBranch.ElseIfBranch, Conditions.HasValue(condition), (CurrentLineHandlingMode?)_macroLineHandling);
 
-    public static readonly ConditionBranchSymbol Else = new(ConditionBranch.ElseBranch, false, _macroLineHandling);
+    public static readonly ConditionBranchSymbol Else = new((ConditionBranch)ConditionBranch.ElseBranch, (bool)false, (CurrentLineHandlingMode?)_macroLineHandling);
 
-    public static readonly ConditionBranchSymbol EndIf = new(ConditionBranch.None, false, _macroLineHandling);
+    public static readonly ConditionBranchSymbol EndIf = new((ConditionBranch)ConditionBranch.None, (bool)false, (CurrentLineHandlingMode?)_macroLineHandling);
 
     public static ConditionSymbol<TTrue> Iif<T, TTrue>(T condition, TTrue trueValue) =>
         new(Conditions.HasValue(condition), trueValue);
 
-    public static ConditionSymbol<IfTrueTemplatePart<T>> Iif<T>(
+    public static ConditionSymbol<IfTrueTemplateString<T>> Iif<T>(
         T condition,
-        [InterpolatedStringHandlerArgument(nameof(condition))] IfTrueTemplatePart<T> trueValue) =>
+        [InterpolatedStringHandlerArgument(nameof(condition))] IfTrueTemplateString<T> trueValue) =>
         new(Conditions.HasValue(condition), trueValue);
 
     public static ConditionSymbol<TTrue, TFalse> Iif<T, TTrue, TFalse>(
@@ -45,21 +46,21 @@ public static class Symbols
         TFalse falseValue) =>
         new(Conditions.HasValue(condition), trueValue, falseValue);
 
-    public static ConditionSymbol<IfTrueTemplatePart<T>, IfFalseTemplatePart<T>> Iif<T>(
+    public static ConditionSymbol<IfTrueTemplateString<T>, IfFalseTemplateString<T>> Iif<T>(
         T condition,
-        [InterpolatedStringHandlerArgument(nameof(condition))] IfTrueTemplatePart<T> trueValue,
-        [InterpolatedStringHandlerArgument(nameof(condition))] IfFalseTemplatePart<T> falseValue) =>
+        [InterpolatedStringHandlerArgument(nameof(condition))] IfTrueTemplateString<T> trueValue,
+        [InterpolatedStringHandlerArgument(nameof(condition))] IfFalseTemplateString<T> falseValue) =>
         new(Conditions.HasValue(condition), trueValue, falseValue);
 
-    public static ConditionSymbol<IfTrueTemplatePart<T>, TFalse> Iif<T, TFalse>(
+    public static ConditionSymbol<IfTrueTemplateString<T>, TFalse> Iif<T, TFalse>(
         T condition,
-        [InterpolatedStringHandlerArgument(nameof(condition))] IfTrueTemplatePart<T> trueValue,
+        [InterpolatedStringHandlerArgument(nameof(condition))] IfTrueTemplateString<T> trueValue,
         TFalse falseValue) =>
         new(Conditions.HasValue(condition), trueValue, falseValue);
 
-    public static ConditionSymbol<TTrue, IfFalseTemplatePart<T>> Iif<T, TTrue>(
+    public static ConditionSymbol<TTrue, IfFalseTemplateString<T>> Iif<T, TTrue>(
         T condition,
         TTrue trueValue,
-        [InterpolatedStringHandlerArgument(nameof(condition))] IfFalseTemplatePart<T> falseValue) =>
+        [InterpolatedStringHandlerArgument(nameof(condition))] IfFalseTemplateString<T> falseValue) =>
         new(Conditions.HasValue(condition), trueValue, falseValue);
 }

@@ -9,11 +9,11 @@ public abstract class CSharpRecordFileBase : ScaffoldFileBase<DtoModel>
 {
     protected override string FileName => $"{Model.Name}.cs";
 
-    protected override void Render(Template template)
+    protected override void Render(Template writer)
     {
         var fields = Model.Fields;
 
-        template.Write(
+        writer.Write(
             $$"""
             namespace {{Model.Namespace}};
             

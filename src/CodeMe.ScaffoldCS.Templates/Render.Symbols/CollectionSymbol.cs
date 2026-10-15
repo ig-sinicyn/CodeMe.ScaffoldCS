@@ -1,37 +1,36 @@
 ﻿using CodeMe.ScaffoldCS.Templates.Internals;
 using CodeMe.ScaffoldCS.Templates.Output;
-using CodeMe.ScaffoldCS.Templates.Render;
 
-namespace CodeMe.ScaffoldCS.Templates.Redner.Symbols;
+namespace CodeMe.ScaffoldCS.Templates.Render.Parts;
 
 public readonly struct CollectionSymbol<T>(
     IEnumerable<T> source,
-    Func<T, TemplatePart>? callback,
+    Func<T, TemplateString>? callback,
     CollectionRenderOptions options) : ITemplateSymbol
 {
-    public void Render(Template template)
+    public void Render(ITemplatePartWriter writer)
     {
         var hasFormat = options.Alignment != 0 || options.Format != null;
         var hasItem = false;
-        using var _ = template.BeginOptionsScope(IndentationFormat.CurrentLine);
+        using var _ = writer.BeginOptionsScope(IndentationFormat.CurrentLine);
         foreach (var item in source)
         {
             if (hasItem && !string.IsNullOrEmpty(options.Separator))
             {
-                template.WriteLiteral(options.Separator);
+                writer.WriteLiteral(options.Separator);
             }
 
             if (callback != null)
             {
-                template.Write(callback(item));
+                writer.Write(callback(item));
             }
             else if (hasFormat)
             {
-                template.Write(item, options.Alignment, options.Format);
+                writer.Write(item, options.Alignment, options.Format);
             }
             else
             {
-                template.Write(item);
+                writer.Write(item);
             }
 
             hasItem = true;
@@ -39,7 +38,7 @@ public readonly struct CollectionSymbol<T>(
 
         if (!hasItem && options.EmptyValue != null)
         {
-            template.Write(options.EmptyValue);
+            writer.Write(options.EmptyValue);
         }
     }
 }

@@ -3,20 +3,17 @@ using CodeMe.ScaffoldCS.Templates.Internals;
 using CodeMe.ScaffoldCS.Templates.Internals.Padding;
 using CodeMe.ScaffoldCS.Templates.Render;
 
-namespace CodeMe.ScaffoldCS.Templates.Redner.Symbols;
+namespace CodeMe.ScaffoldCS.Templates.Render.Parts;
 
-public class PaddingSymbol<T>(
-    T value,
-    PaddingRenderOptions options)
-    : IPaddingSymbol
+public class PaddingSymbol<T>(T value, PaddingRenderOptions options) : IPaddingSymbol
 {
     private readonly PaddingMode _autoMode = typeof(T) switch
     {
         var x when x == typeof(string) => PaddingMode.Left,
         var x when x == typeof(ReadOnlyMemory<char>) => PaddingMode.Left,
         var x when x == typeof(StringBuilder) => PaddingMode.Left,
-        var x when x.IsAssignableTo(typeof(ITemplateSymbol)) => PaddingMode.None,
-        var x when x.IsAssignableTo(typeof(ITemplatePart)) => PaddingMode.None,
+        var x when x.IsAssignableTo(typeof(ITemplateValueSymbol)) => PaddingMode.None,
+        var x when x.IsAssignableTo(typeof(IInterpolatedString)) => PaddingMode.None,
         _ => PaddingMode.Right
     };
 
@@ -24,35 +21,35 @@ public class PaddingSymbol<T>(
 
     public IPaddingColumn? Column { get; set; }
 
-    public void Render(Template template)
+    public void Render(ITemplatePartWriter writer)
     {
-        var actualWidth = _estimatedWidth ?? EstimateWidth(template.Options.Culture);
+        var actualWidth = _estimatedWidth ?? EstimateWidth(writer.Options.Culture);
         var desiredWidth = Column?.ColumnWidth ?? actualWidth;
 
-        RenderPadding(template, GetPrefixWidth(desiredWidth, actualWidth));
-        RenderCore(template);
-        RenderPadding(template, GetSuffixWidth(desiredWidth, actualWidth));
+        RenderPadding(writer, GetPrefixWidth(desiredWidth, actualWidth));
+        RenderCore(writer);
+        RenderPadding(writer, GetSuffixWidth(desiredWidth, actualWidth));
     }
 
-    private void RenderPadding(Template template, int paddingWidth)
+    private void RenderPadding(ITemplatePartWriter writer, int paddingWidth)
     {
         if (paddingWidth > 0)
         {
             Span<char> span = stackalloc char[paddingWidth];
             span.Fill(options.PaddingChar);
-            template.WriteLiteral(span);
+            writer.WriteLiteral(span);
         }
     }
 
-    private void RenderCore(Template template)
+    private void RenderCore(ITemplatePartWriter writer)
     {
         if (options.Format == null)
         {
-            template.Write(value);
+            writer.Write(value);
         }
         else
         {
-            template.Write(value, 0, options.Format);
+            writer.Write(value, 0, options.Format);
         }
     }
 

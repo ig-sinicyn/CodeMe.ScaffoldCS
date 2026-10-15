@@ -381,7 +381,7 @@ public class TemplateTests
         writer.ShouldBe("");
     }
 
-    private static TemplatePart RenderProperty(Property property) =>
+    private static TemplateString RenderProperty(Property property) =>
         $$"""
         {{IF(property.Comment)}}
         /// <summary>

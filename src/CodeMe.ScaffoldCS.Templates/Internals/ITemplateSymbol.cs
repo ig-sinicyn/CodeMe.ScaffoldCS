@@ -2,5 +2,5 @@
 
 public interface ITemplateSymbol
 {
-    void Render(Template template);
+    void Render(ITemplatePartWriter writer);
 }

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using CodeMe.ScaffoldCS.Templates.Redner.Symbols;
+using CodeMe.ScaffoldCS.Templates.Render.Parts;
 
 namespace CodeMe.ScaffoldCS.Templates.Render;
 
@@ -30,9 +31,9 @@ public static class SymbolsCS
     public static ConditionSymbol<TTrue> IIF<T, TTrue>(T condition, TTrue trueValue) =>
         Symbols.Iif(condition, trueValue);
 
-    public static ConditionSymbol<IfTrueTemplatePart<T>> IIF<T>(
+    public static ConditionSymbol<IfTrueTemplateString<T>> IIF<T>(
         T condition,
-        [InterpolatedStringHandlerArgument(nameof(condition))] IfTrueTemplatePart<T> trueValue) =>
+        [InterpolatedStringHandlerArgument(nameof(condition))] IfTrueTemplateString<T> trueValue) =>
         Symbols.Iif(condition, trueValue);
 
     public static ConditionSymbol<TTrue, TFalse> IIF<T, TTrue, TFalse>(
@@ -41,21 +42,21 @@ public static class SymbolsCS
         TFalse falseValue) =>
         Symbols.Iif(condition, trueValue, falseValue);
 
-    public static ConditionSymbol<IfTrueTemplatePart<T>, IfFalseTemplatePart<T>> IIF<T>(
+    public static ConditionSymbol<IfTrueTemplateString<T>, IfFalseTemplateString<T>> IIF<T>(
         T condition,
-        [InterpolatedStringHandlerArgument(nameof(condition))] IfTrueTemplatePart<T> trueValue,
-        [InterpolatedStringHandlerArgument(nameof(condition))] IfFalseTemplatePart<T> falseValue) =>
+        [InterpolatedStringHandlerArgument(nameof(condition))] IfTrueTemplateString<T> trueValue,
+        [InterpolatedStringHandlerArgument(nameof(condition))] IfFalseTemplateString<T> falseValue) =>
         Symbols.Iif(condition, trueValue, falseValue);
 
-    public static ConditionSymbol<IfTrueTemplatePart<T>, TFalse> IIF<T, TFalse>(
+    public static ConditionSymbol<IfTrueTemplateString<T>, TFalse> IIF<T, TFalse>(
         T condition,
-        [InterpolatedStringHandlerArgument(nameof(condition))] IfTrueTemplatePart<T> trueValue,
+        [InterpolatedStringHandlerArgument(nameof(condition))] IfTrueTemplateString<T> trueValue,
         TFalse falseValue) =>
         Symbols.Iif(condition, trueValue, falseValue);
 
-    public static ConditionSymbol<TTrue, IfFalseTemplatePart<T>> IIF<T, TTrue>(
+    public static ConditionSymbol<TTrue, IfFalseTemplateString<T>> IIF<T, TTrue>(
         T condition,
         TTrue trueValue,
-        [InterpolatedStringHandlerArgument(nameof(condition))] IfFalseTemplatePart<T> falseValue) =>
+        [InterpolatedStringHandlerArgument(nameof(condition))] IfFalseTemplateString<T> falseValue) =>
         Symbols.Iif(condition, trueValue, falseValue);
 }

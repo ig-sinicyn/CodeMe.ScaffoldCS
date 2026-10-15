@@ -1,9 +1,10 @@
 ﻿using CodeMe.ScaffoldCS.Templates.Internals;
 using CodeMe.ScaffoldCS.Templates.Internals.Padding;
 using CodeMe.ScaffoldCS.Templates.Output;
+using CodeMe.ScaffoldCS.Templates.Redner.Symbols;
 using CodeMe.ScaffoldCS.Templates.Render;
 
-namespace CodeMe.ScaffoldCS.Templates.Redner.Symbols;
+namespace CodeMe.ScaffoldCS.Templates.Render.Parts;
 
 public readonly struct PaddingCollectionSymbol<T>(
     IEnumerable<T> source,
@@ -11,18 +12,18 @@ public readonly struct PaddingCollectionSymbol<T>(
     CollectionRenderOptions options,
     PaddingRenderOptions paddingOptions) : ITemplateSymbol
 {
-    public void Render(Template template)
+    public void Render(ITemplatePartWriter writer)
     {
-        var accumulator = new PaddingAccumulator(template)
+        var accumulator = new PaddingAccumulator(writer)
         {
             DefaultPaddingRenderOptions = paddingOptions
         };
 
-        using var _ = template.BeginOptionsScope(IndentationFormat.CurrentLine);
+        using var _ = writer.BeginOptionsScope(IndentationFormat.CurrentLine);
         using (accumulator.BeginAmbientScope())
         {
             var hasItem = false;
-            ITemplateSymbol? separator =
+            ITemplateValueSymbol? separator =
                 string.IsNullOrEmpty(options.Separator) ? null : new LiteralSymbol(options.Separator);
             foreach (var item in source)
             {
@@ -47,6 +48,6 @@ public readonly struct PaddingCollectionSymbol<T>(
             }
         }
 
-        template.Write(accumulator);
+        writer.Write(accumulator);
     }
 }

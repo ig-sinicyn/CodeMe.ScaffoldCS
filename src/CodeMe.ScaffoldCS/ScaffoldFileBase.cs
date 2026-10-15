@@ -65,5 +65,5 @@ public abstract class ScaffoldFileBase : IScaffoldPart
         return result;
     }
 
-    protected abstract void Render(Template template);
+    protected abstract void Render(Template writer);
 }

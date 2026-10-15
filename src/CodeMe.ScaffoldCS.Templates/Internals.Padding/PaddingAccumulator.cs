@@ -3,11 +3,11 @@ using CodeMe.ScaffoldCS.Templates.Render;
 
 namespace CodeMe.ScaffoldCS.Templates.Internals.Padding;
 
-public class PaddingAccumulator(Template template)
+public class PaddingAccumulator(Template writer)
 {
     private readonly StringBuilder _buffer = new();
     private readonly List<PaddingColumn> _columns = new();
-    private readonly List<ITemplateSymbol> _deferredSymbols = new();
+    private readonly List<ITemplateValueSymbol> _deferredSymbols = new();
     private int _columnIndex = -1;
 
     public PaddingRenderOptions DefaultPaddingRenderOptions { get; set; } = PaddingRenderOptions.Default;
@@ -28,14 +28,14 @@ public class PaddingAccumulator(Template template)
 
     public IDisposable BeginAmbientScope() => AmbientPaddingAccumulator.BeginAccumulatorScope(this);
 
-    public void Write(ITemplateSymbol symbol)
+    public void Write(ITemplateValueSymbol symbol)
     {
         if (symbol is IPaddingSymbol paddingSymbol)
         {
             _buffer.Clear();
             try
             {
-                var valueWidth = paddingSymbol.EstimateWidth(template.Options.Culture, _buffer);
+                var valueWidth = paddingSymbol.EstimateWidth(writer.Options.Culture, _buffer);
 
                 var column = NextColumn();
                 column.ColumnWidth = Math.Max(column.ColumnWidth, valueWidth);
@@ -53,11 +53,11 @@ public class PaddingAccumulator(Template template)
 
     public void DisposeIfSame(Template caller)
     {
-        if (ReferenceEquals(template, caller))
+        if (ReferenceEquals(writer, caller))
         {
             foreach (var deferredSymbol in _deferredSymbols)
             {
-                template.Write(deferredSymbol);
+                writer.Write(deferredSymbol);
             }
 
             _deferredSymbols.Clear();

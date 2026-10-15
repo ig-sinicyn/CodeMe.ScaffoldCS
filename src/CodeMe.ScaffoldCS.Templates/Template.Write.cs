@@ -204,9 +204,9 @@ public partial class Template
         return this;
     }
 
-    public Template Write([InterpolatedStringHandlerArgument("")] TemplatePart value) => this;
+    public Template Write([InterpolatedStringHandlerArgument("")] TemplateString value) => this;
 
-    public Template WriteLine([InterpolatedStringHandlerArgument("")] TemplatePart value)
+    public Template WriteLine([InterpolatedStringHandlerArgument("")] TemplateString value)
     {
         Write(value);
         WriteLine();
@@ -214,7 +214,7 @@ public partial class Template
         return this;
     }
 
-    public Template Write(ITemplateSymbol value)
+    public Template Write(ITemplateValueSymbol value)
     {
         if (ShouldWrite || value is IControlTemplateSymbol)
         {
@@ -244,17 +244,17 @@ public partial class Template
             return this;
         }
 
-        if (value is ITemplateSymbol)
+        if (value is ITemplateValueSymbol)
         {
             if (ShouldWrite || value is IControlTemplateSymbol)
             {
-                ((ITemplateSymbol)value).Render(this);
+                ((ITemplateValueSymbol)value).Render(this);
             }
 
             return this;
         }
 
-        if (value is ITemplatePart)
+        if (value is IInterpolatedString)
         {
             return this;
         }
@@ -293,17 +293,17 @@ public partial class Template
             return this;
         }
 
-        if (value is ITemplateSymbol)
+        if (value is ITemplateValueSymbol)
         {
             if (ShouldWrite || value is IControlTemplateSymbol)
             {
-                ((ITemplateSymbol)value).Render(this);
+                ((ITemplateValueSymbol)value).Render(this);
             }
 
             return this;
         }
 
-        if (value is ITemplatePart)
+        if (value is IInterpolatedString)
         {
             return this;
         }

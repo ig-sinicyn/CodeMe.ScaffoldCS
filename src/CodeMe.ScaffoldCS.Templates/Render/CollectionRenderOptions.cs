@@ -4,7 +4,7 @@ namespace CodeMe.ScaffoldCS.Templates.Render;
 
 public record CollectionRenderOptions(
     string? Separator = null,
-    ITemplateSymbol? EmptyValue = null,
+    ITemplateValueSymbol? EmptyValue = null,
     int Alignment = 0,
     string? Format = null)
 {

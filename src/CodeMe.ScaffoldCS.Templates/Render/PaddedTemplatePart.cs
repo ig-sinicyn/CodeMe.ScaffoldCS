@@ -6,15 +6,15 @@ namespace CodeMe.ScaffoldCS.Templates.Render;
 [InterpolatedStringHandler]
 public readonly struct PaddedTemplatePart //: ITemplatePart
 {
-    private readonly ITemplate _template;
+    private readonly ITemplateWriter _writer;
 
     public PaddedTemplatePart(int literalLength, int formattedCount)
         : this(literalLength, formattedCount, AmbientTemplate.Current)
     {
     }
 
-    public PaddedTemplatePart(int literalLength, int formattedCount, ITemplate template)
+    public PaddedTemplatePart(int literalLength, int formattedCount, ITemplateWriter writer)
     {
-        _template = template;
+        _writer = writer;
     }
 }

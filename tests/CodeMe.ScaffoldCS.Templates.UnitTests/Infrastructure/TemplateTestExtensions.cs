@@ -4,20 +4,20 @@ namespace CodeMe.ScaffoldCS.Templates.UnitTests.Infrastructure;
 
 internal static class TemplateTestExtensions
 {
-    public static string GetOutput(this Template template)
+    public static string GetOutput(this Template writer)
     {
-        var output = (StringWriter)template.GetTestAccessor().Output;
+        var output = (StringWriter)writer.GetTestAccessor().Output;
 
         return output.ToString();
     }
 
     public static Template ShouldBe(
-        this Template template,
+        this Template writer,
         string rendered)
     {
-        var testAccessor = template.GetTestAccessor();
+        var testAccessor = writer.GetTestAccessor();
         var output = (StringWriter)testAccessor.Output;
-        template.Close();
+        writer.Close();
 
         using var _ = new AssertionScope();
         var current = output.ToString();
@@ -25,6 +25,6 @@ internal static class TemplateTestExtensions
         testAccessor.BranchesStack.Count.Should().Be(0);
         testAccessor.OptionsStack.Count.Should().Be(0);
 
-        return template;
+        return writer;
     }
 }
