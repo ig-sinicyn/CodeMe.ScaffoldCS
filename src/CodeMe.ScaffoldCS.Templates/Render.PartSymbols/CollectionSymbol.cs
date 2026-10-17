@@ -1,18 +1,18 @@
 ﻿using CodeMe.ScaffoldCS.Templates.Internals;
-using CodeMe.ScaffoldCS.Templates.Output;
 
-namespace CodeMe.ScaffoldCS.Templates.Render.Parts;
+namespace CodeMe.ScaffoldCS.Templates.Render.PartSymbols;
 
 public readonly struct CollectionSymbol<T>(
     IEnumerable<T> source,
     Func<T, TemplateString>? callback,
-    CollectionRenderOptions options) : ITemplateSymbol
+    CollectionRenderOptions options) : ITemplatePartSymbol
 {
     public void Render(ITemplatePartWriter writer)
     {
         var hasFormat = options.Alignment != 0 || options.Format != null;
         var hasItem = false;
-        using var _ = writer.BeginOptionsScope(IndentationFormat.CurrentLine);
+
+        using var _ = writer.BeginMultilineStringScope();
         foreach (var item in source)
         {
             if (hasItem && !string.IsNullOrEmpty(options.Separator))
@@ -22,7 +22,7 @@ public readonly struct CollectionSymbol<T>(
 
             if (callback != null)
             {
-                writer.Write(callback(item));
+                writer.Write(TemplateStringSymbol.Create(item, callback));
             }
             else if (hasFormat)
             {

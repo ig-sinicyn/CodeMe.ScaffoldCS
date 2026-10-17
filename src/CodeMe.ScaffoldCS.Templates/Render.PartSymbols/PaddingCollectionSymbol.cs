@@ -1,16 +1,15 @@
 ﻿using CodeMe.ScaffoldCS.Templates.Internals;
 using CodeMe.ScaffoldCS.Templates.Internals.Padding;
 using CodeMe.ScaffoldCS.Templates.Output;
-using CodeMe.ScaffoldCS.Templates.Redner.Symbols;
-using CodeMe.ScaffoldCS.Templates.Render;
+using CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
 
-namespace CodeMe.ScaffoldCS.Templates.Render.Parts;
+namespace CodeMe.ScaffoldCS.Templates.Render.PartSymbols;
 
 public readonly struct PaddingCollectionSymbol<T>(
     IEnumerable<T> source,
     Func<T, PaddedTemplatePart> callback,
     CollectionRenderOptions options,
-    PaddingRenderOptions paddingOptions) : ITemplateSymbol
+    PaddingRenderOptions paddingOptions) : ITemplatePartSymbol
 {
     public void Render(ITemplatePartWriter writer)
     {

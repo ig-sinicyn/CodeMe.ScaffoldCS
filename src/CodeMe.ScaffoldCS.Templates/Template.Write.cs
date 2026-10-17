@@ -216,7 +216,7 @@ public partial class Template
 
     public Template Write(ITemplateValueSymbol value)
     {
-        if (ShouldWrite || value is IControlTemplateSymbol)
+        if (ShouldWrite || value is ITemplateControlSymbol)
         {
             value.Render(this);
         }
@@ -246,7 +246,7 @@ public partial class Template
 
         if (value is ITemplateValueSymbol)
         {
-            if (ShouldWrite || value is IControlTemplateSymbol)
+            if (ShouldWrite || value is ITemplateControlSymbol)
             {
                 ((ITemplateValueSymbol)value).Render(this);
             }
@@ -295,7 +295,7 @@ public partial class Template
 
         if (value is ITemplateValueSymbol)
         {
-            if (ShouldWrite || value is IControlTemplateSymbol)
+            if (ShouldWrite || value is ITemplateControlSymbol)
             {
                 ((ITemplateValueSymbol)value).Render(this);
             }

@@ -2,7 +2,7 @@
 
 namespace CodeMe.ScaffoldCS.Templates.Internals.Padding;
 
-public interface IPaddingSymbol : ITemplateSymbol
+public interface IPaddingSymbol : ITemplatePartSymbol
 {
     IPaddingColumn? Column { get; set; }
 

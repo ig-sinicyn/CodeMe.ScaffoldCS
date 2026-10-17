@@ -1,10 +1,11 @@
-﻿using CodeMe.ScaffoldCS.Templates.Output;
+﻿using System.Runtime.CompilerServices;
+using CodeMe.ScaffoldCS.Templates.Output;
 
 namespace CodeMe.ScaffoldCS.Templates.Internals;
 
-public interface ITemplatePartWriter : ITemplateWriter
+public interface ITemplatePartWriter : ITemplateValueWriter
 {
-    TemplateTextWriterOptions Options { get; }
+    TemplateTextWriterOptions CreateOptions(IndentationFormat indentationFormat);
 
     void BeginConditionBranch(ConditionBranch branch, bool condition);
 
@@ -12,5 +13,6 @@ public interface ITemplatePartWriter : ITemplateWriter
 
     void Write(Func<TemplateString> callback);
 
+    [OverloadResolutionPriority(-1)]
     void Write<T>(IEnumerable<T> values);
 }

@@ -1,12 +1,12 @@
 ﻿using CodeMe.ScaffoldCS.Templates.Internals;
 using CodeMe.ScaffoldCS.Templates.Output;
 
-namespace CodeMe.ScaffoldCS.Templates.Render.Symbols;
+namespace CodeMe.ScaffoldCS.Templates.Render.PartSymbols;
 
 public readonly struct ConditionBranchSymbol(
     ConditionBranch branch,
     bool condition,
-    CurrentLineHandlingMode? lineHandling) : IControlTemplateSymbol
+    CurrentLineHandlingMode? lineHandling) : ITemplateControlSymbol
 {
     public void Render(ITemplatePartWriter writer)
     {
@@ -14,14 +14,14 @@ public readonly struct ConditionBranchSymbol(
         // as we may toggle output on or off
         if (lineHandling != null)
         {
-            writer.SetLineHandling(lineHandling.Value);
+            writer.CurrentLineHandling = lineHandling.Value;
         }
 
         writer.BeginConditionBranch(branch, condition);
 
         if (lineHandling != null)
         {
-            writer.SetLineHandling(lineHandling.Value);
+            writer.CurrentLineHandling = lineHandling.Value;
         }
     }
 }

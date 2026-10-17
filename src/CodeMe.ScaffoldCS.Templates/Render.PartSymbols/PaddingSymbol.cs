@@ -1,9 +1,8 @@
 ﻿using System.Text;
 using CodeMe.ScaffoldCS.Templates.Internals;
 using CodeMe.ScaffoldCS.Templates.Internals.Padding;
-using CodeMe.ScaffoldCS.Templates.Render;
 
-namespace CodeMe.ScaffoldCS.Templates.Render.Parts;
+namespace CodeMe.ScaffoldCS.Templates.Render.PartSymbols;
 
 public class PaddingSymbol<T>(T value, PaddingRenderOptions options) : IPaddingSymbol
 {

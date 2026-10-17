@@ -2,5 +2,5 @@
 
 public interface ITemplateValueSymbol
 {
-    void Render(ITemplateWriter writer);
+    void Render(ITemplateValueWriter writer);
 }

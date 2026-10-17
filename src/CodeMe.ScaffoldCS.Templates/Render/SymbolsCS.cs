@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using CodeMe.ScaffoldCS.Templates.Redner.Symbols;
-using CodeMe.ScaffoldCS.Templates.Render.Parts;
+using CodeMe.ScaffoldCS.Templates.Render.PartSymbols;
+using CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
 
 namespace CodeMe.ScaffoldCS.Templates.Render;
 

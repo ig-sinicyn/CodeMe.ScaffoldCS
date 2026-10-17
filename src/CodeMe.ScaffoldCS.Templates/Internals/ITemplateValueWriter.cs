@@ -2,17 +2,19 @@
 
 namespace CodeMe.ScaffoldCS.Templates.Internals;
 
-public interface ITemplateWriter
+public interface ITemplateValueWriter
 {
+    TemplateTextWriterOptions Options { get; set; }
+
+    CurrentLineHandlingMode CurrentLineHandling { get; set; }
+
     void ClearLine();
 
-    void SetLineHandling(CurrentLineHandlingMode lineHandling);
+    void WriteLine();
 
     void WriteLiteral(string? value);
 
     void WriteLiteral(ReadOnlySpan<char> value);
-
-    void WriteLine();
 
     void Write(string? value);
 
@@ -24,5 +26,5 @@ public interface ITemplateWriter
 
     void Write<T>(T? value);
 
-    void Write<T>(T? value, int alignment, string? format);
+    void Write<T>(T? value, int alignment, string? format = null);
 }

@@ -3,7 +3,10 @@
 public enum ConditionBranch
 {
     None,
+
     IfBranch,
+
     ElseIfBranch,
+
     ElseBranch
 }

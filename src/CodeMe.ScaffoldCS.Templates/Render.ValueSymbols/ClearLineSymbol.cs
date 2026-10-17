@@ -1,8 +1,8 @@
 ﻿using CodeMe.ScaffoldCS.Templates.Internals;
 
-namespace CodeMe.ScaffoldCS.Templates.Redner.Symbols;
+namespace CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
 
 public readonly struct ClearLineSymbol : ITemplateValueSymbol
 {
-    public void Render(ITemplateWriter writer) => writer.ClearLine();
+    public void Render(ITemplateValueWriter writer) => writer.ClearLine();
 }

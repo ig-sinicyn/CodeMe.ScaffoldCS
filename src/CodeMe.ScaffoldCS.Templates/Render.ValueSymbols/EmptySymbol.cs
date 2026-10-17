@@ -1,10 +1,10 @@
 ﻿using CodeMe.ScaffoldCS.Templates.Internals;
 
-namespace CodeMe.ScaffoldCS.Templates.Redner.Symbols;
+namespace CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
 
 public readonly struct EmptySymbol : ITemplateValueSymbol
 {
-    public void Render(ITemplateWriter writer)
+    public void Render(ITemplateValueWriter writer)
     {
     }
 }

@@ -1,9 +1,9 @@
 ﻿using CodeMe.ScaffoldCS.Templates.Internals;
 
-namespace CodeMe.ScaffoldCS.Templates.Render.Parts;
+namespace CodeMe.ScaffoldCS.Templates.Render.PartSymbols;
 
 public readonly struct ConditionSymbol<TTrue, TFalse>(bool condition, TTrue trueValue, TFalse falseValue)
-    : ITemplateSymbol
+    : ITemplatePartSymbol
 {
     public void Render(ITemplatePartWriter writer)
     {

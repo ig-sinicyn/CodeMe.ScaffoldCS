@@ -1,9 +1,9 @@
 ﻿using CodeMe.ScaffoldCS.Templates.Internals;
 using CodeMe.ScaffoldCS.Templates.Output;
 
-namespace CodeMe.ScaffoldCS.Templates.Redner.Symbols;
+namespace CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
 
 public readonly struct LineHandlingSymbol(CurrentLineHandlingMode lineHandling) : ITemplateValueSymbol
 {
-    public void Render(ITemplateWriter writer) => writer.SetLineHandling(lineHandling);
+    public void Render(ITemplateValueWriter writer) => writer.CurrentLineHandling = lineHandling;
 }
