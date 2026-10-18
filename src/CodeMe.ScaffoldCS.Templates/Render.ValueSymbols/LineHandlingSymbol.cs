@@ -5,5 +5,5 @@ namespace CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
 
 public readonly struct LineHandlingSymbol(CurrentLineHandlingMode lineHandling) : ITemplateValueSymbol
 {
-    public void Render(ITemplateValueWriter writer) => writer.CurrentLineHandling = lineHandling;
+    public void Render(ITemplateValueWriter writer) => writer.SetCurrentLineHandling(lineHandling);
 }

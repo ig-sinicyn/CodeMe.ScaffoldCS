@@ -5,11 +5,9 @@ namespace CodeMe.ScaffoldCS.Templates.Internals;
 
 public interface ITemplatePartWriter : ITemplateValueWriter
 {
-    TemplateTextWriterOptions CreateOptions(IndentationFormat indentationFormat);
-
     void BeginConditionBranch(ConditionBranch branch, bool condition);
 
-    void Write(Action<Template> callback);
+    void Write(Action<ITemplatePartWriter> callback);
 
     void Write(Func<TemplateString> callback);
 

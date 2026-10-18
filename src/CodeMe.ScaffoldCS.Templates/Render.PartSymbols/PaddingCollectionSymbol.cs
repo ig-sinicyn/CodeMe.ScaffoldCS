@@ -18,7 +18,7 @@ public readonly struct PaddingCollectionSymbol<T>(
             DefaultPaddingRenderOptions = paddingOptions
         };
 
-        using var _ = writer.BeginOptionsScope(IndentationFormat.CurrentLine);
+        using var _ = TemplatePartWriterExtensions.BeginOptionsScope(writer, IndentationFormat.CurrentLine);
         using (accumulator.BeginAmbientScope())
         {
             var hasItem = false;

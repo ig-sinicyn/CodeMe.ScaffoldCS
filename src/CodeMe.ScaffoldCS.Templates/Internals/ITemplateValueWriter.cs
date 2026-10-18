@@ -4,9 +4,11 @@ namespace CodeMe.ScaffoldCS.Templates.Internals;
 
 public interface ITemplateValueWriter
 {
-    TemplateTextWriterOptions Options { get; set; }
+    TemplateOptionsScope BeginOptionsScope(IndentationFormat indentation);
 
-    CurrentLineHandlingMode CurrentLineHandling { get; set; }
+    void SetOptions(TemplateTextWriterOptions options);
+
+    void SetCurrentLineHandling(CurrentLineHandlingMode lineHandling);
 
     void ClearLine();
 

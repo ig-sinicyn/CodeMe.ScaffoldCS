@@ -14,14 +14,14 @@ public readonly struct ConditionBranchSymbol(
         // as we may toggle output on or off
         if (lineHandling != null)
         {
-            writer.CurrentLineHandling = lineHandling.Value;
+            writer.SetCurrentLineHandling(lineHandling.Value);
         }
 
         writer.BeginConditionBranch(branch, condition);
 
         if (lineHandling != null)
         {
-            writer.CurrentLineHandling = lineHandling.Value;
+            writer.SetCurrentLineHandling(lineHandling.Value);
         }
     }
 }
