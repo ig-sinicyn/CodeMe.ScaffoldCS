@@ -4,7 +4,7 @@ namespace CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
 
 public readonly struct TemplateOptionsScopeEndSymbol(TemplateOptionsScopeStartSymbol scopeStart) : ITemplateValueSymbol
 {
-    public void Render(ITemplateValueWriter writer)
+    public void Render(Template template)
     {
         if (scopeStart.Scope is { } scope)
         {

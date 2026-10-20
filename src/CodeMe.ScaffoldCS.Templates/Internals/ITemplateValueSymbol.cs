@@ -1,6 +1,5 @@
 ﻿namespace CodeMe.ScaffoldCS.Templates.Internals;
 
-public interface ITemplateValueSymbol
+public interface ITemplateValueSymbol: ITemplateSymbol
 {
-    void Render(ITemplateValueWriter writer);
 }

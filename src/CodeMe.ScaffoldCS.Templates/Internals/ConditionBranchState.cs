@@ -1,6 +1,4 @@
-﻿using CodeMe.ScaffoldCS.Templates.Internals;
-
-namespace CodeMe.ScaffoldCS.Templates.Render.Writers;
+﻿namespace CodeMe.ScaffoldCS.Templates.Internals;
 
 public class ConditionBranchState
 {

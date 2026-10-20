@@ -8,20 +8,20 @@ public readonly struct ConditionBranchSymbol(
     bool condition,
     CurrentLineHandlingMode? lineHandling) : ITemplateControlSymbol
 {
-    public void Render(ITemplatePartWriter writer)
+    public void Render(Template template)
     {
         // We need to set line handling before and after branch switching
         // as we may toggle output on or off
         if (lineHandling != null)
         {
-            writer.SetCurrentLineHandling(lineHandling.Value);
+            template.SetCurrentLineHandling(lineHandling.Value);
         }
 
-        writer.BeginConditionBranch(branch, condition);
+        template.BeginConditionBranch(branch, condition);
 
         if (lineHandling != null)
         {
-            writer.SetCurrentLineHandling(lineHandling.Value);
+            template.SetCurrentLineHandling(lineHandling.Value);
         }
     }
 }

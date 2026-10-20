@@ -4,13 +4,13 @@ namespace CodeMe.ScaffoldCS.Templates.Internals;
 
 public static class AmbientTemplate
 {
-    private static readonly ScopedAsyncLocal<ITemplatePartWriter> _templateStack = new();
+    private static readonly ScopedAsyncLocal<Template> _templateStack = new();
 
-    internal static IDisposable BeginScope(ITemplatePartWriter writer) => _templateStack.BeginScope(writer);
+    internal static IDisposable BeginTemplateScope(Template template) => _templateStack.BeginScope(template);
 
-    public static ITemplatePartWriter Current => _templateStack.Current
+    public static Template Current => _templateStack.Current
         ?? throw new InvalidOperationException(
             $"There is no ambient template. Call {nameof(Template)}.{nameof(Template.BeginAmbientScope)} to enable ambient templates");
 
-    public static ITemplatePartWriter? CurrentOrDefault => _templateStack.Current;
+    public static Template? CurrentOrDefault => _templateStack.Current;
 }

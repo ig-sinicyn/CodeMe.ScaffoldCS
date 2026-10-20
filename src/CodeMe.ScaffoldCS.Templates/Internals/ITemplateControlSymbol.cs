@@ -1,5 +1,5 @@
 ﻿namespace CodeMe.ScaffoldCS.Templates.Internals;
 
-public interface ITemplateControlSymbol : ITemplatePartSymbol
+public interface ITemplateControlSymbol : ITemplateSymbol
 {
 }

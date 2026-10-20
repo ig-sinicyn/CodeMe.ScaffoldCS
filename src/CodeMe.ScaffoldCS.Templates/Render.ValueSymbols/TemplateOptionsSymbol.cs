@@ -5,5 +5,5 @@ namespace CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
 
 public readonly struct TemplateOptionsSymbol(TemplateTextWriterOptions options) : ITemplateValueSymbol
 {
-    public void Render(ITemplateValueWriter writer) => writer.SetOptions(options);
+    public void Render(Template template) => template.CurrentOptions = options;
 }

@@ -6,48 +6,43 @@ namespace CodeMe.ScaffoldCS.Templates;
 
 public sealed partial class Template : IDisposable
 {
-    private readonly TemplateTextWriter _writer;
+    private readonly TemplateTextWriter _textWriter;
+    private readonly ConditionBranchState _branchState;
 
     public Template(TextWriter output, TemplateTextWriterOptions? options = null, bool leaveOpen = false)
     {
-        _writer = new TemplateTextWriter(output, options, leaveOpen);
+        _textWriter = new TemplateTextWriter(output, options, leaveOpen);
+        _branchState = new ConditionBranchState();
         ShouldWrite = true;
         ValidateOnClose = true;
         DefaultCollectionRenderOptions = CollectionRenderOptions.Default;
+        DefaultPaddingOptions = PaddingRenderOptions.Default;
     }
+
+    public bool ShouldWrite { get; private set; }
 
     public bool ValidateOnClose { get; set; }
 
-    public TemplateTextWriterOptions Options
-    {
-        get => _writer.Options;
-        set => _writer.Options = value;
-    }
-
     public CollectionRenderOptions DefaultCollectionRenderOptions { get; set; }
 
-    public bool ShouldWrite { get; private set; }
+    public PaddingRenderOptions DefaultPaddingOptions { get; set; }
 
     public void Dispose()
     {
         if (ValidateOnClose)
         {
-            if (_branchesStack.Count > 0)
+            if (_branchState.CurrentBranch != ConditionBranch.None)
             {
                 throw new InvalidOperationException(
                     "There is unclosed 'if' or 'else' branch. Please fix the template content"
                     + $" or disable the {nameof(ValidateOnClose)} option.");
             }
 
-            if (_optionsStack.Count > 0)
-            {
-                throw new InvalidOperationException(
-                    "There is unclosed options scope."
-                    + $" Please dispose all {nameof(BeginOptionsScope)} scopes.");
-            }
+            // todo: options count / other scope count
         }
 
-        _writer.Dispose();
+        _textWriter.Dispose();
+        _paddings.Clear();
     }
 
     public void Close() => Dispose();

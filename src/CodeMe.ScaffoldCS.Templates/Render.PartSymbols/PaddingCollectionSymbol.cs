@@ -9,16 +9,16 @@ public readonly struct PaddingCollectionSymbol<T>(
     IEnumerable<T> source,
     Func<T, PaddedTemplatePart> callback,
     CollectionRenderOptions options,
-    PaddingRenderOptions paddingOptions) : ITemplatePartSymbol
+    PaddingRenderOptions paddingOptions) : ITemplateSymbol
 {
-    public void Render(ITemplatePartWriter writer)
+    public void Render(Template template)
     {
-        var accumulator = new PaddingAccumulator(writer)
+        var accumulator = new PaddingAccumulator(template)
         {
             DefaultPaddingRenderOptions = paddingOptions
         };
 
-        using var _ = TemplatePartWriterExtensions.BeginOptionsScope(writer, IndentationFormat.CurrentLine);
+        using var _ = TemplatePartWriterExtensions.BeginOptionsScope(template, IndentationFormat.CurrentLine);
         using (accumulator.BeginAmbientScope())
         {
             var hasItem = false;
@@ -47,6 +47,6 @@ public readonly struct PaddingCollectionSymbol<T>(
             }
         }
 
-        writer.Write(accumulator);
+        template.Write(accumulator);
     }
 }

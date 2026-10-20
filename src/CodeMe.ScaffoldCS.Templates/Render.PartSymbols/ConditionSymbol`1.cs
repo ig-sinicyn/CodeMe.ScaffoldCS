@@ -2,13 +2,13 @@
 
 namespace CodeMe.ScaffoldCS.Templates.Render.PartSymbols;
 
-public readonly struct ConditionSymbol<TTrue>(bool condition, TTrue trueValue) : ITemplatePartSymbol
+public readonly struct ConditionSymbol<TTrue>(bool condition, TTrue trueValue) : ITemplateSymbol
 {
-    public void Render(ITemplatePartWriter writer)
+    public void Render(Template template)
     {
         if (condition)
         {
-            writer.Write(trueValue);
+            template.Write(trueValue);
         }
     }
 }

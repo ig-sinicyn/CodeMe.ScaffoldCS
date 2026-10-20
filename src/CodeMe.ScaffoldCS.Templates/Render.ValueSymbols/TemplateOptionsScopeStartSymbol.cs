@@ -7,7 +7,7 @@ public class TemplateOptionsScopeStartSymbol(IndentationFormat indentation) : IT
 {
     public TemplateOptionsScope? Scope { get; internal set; }
 
-    public void Render(ITemplateValueWriter writer) => Scope = writer.BeginOptionsScope(indentation);
+    public void Render(Template template) => Scope = template.BeginOptionsScope(indentation);
 
     public TemplateOptionsScopeEndSymbol EndSymbol => new(this);
 }

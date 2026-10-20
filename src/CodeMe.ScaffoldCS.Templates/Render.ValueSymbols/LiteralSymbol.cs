@@ -2,7 +2,11 @@
 
 namespace CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
 
-public readonly struct LiteralSymbol(string? value) : ITemplateValueSymbol
+public readonly struct LiteralSymbol(ReadOnlyMemory<char> value) : ITemplateValueSymbol
 {
-    public void Render(ITemplateValueWriter writer) => writer.WriteLiteral(value);
+    public LiteralSymbol(string? value) : this(value.AsMemory())
+    {
+    }
+
+    public void Render(Template template) => template.WriteLiteral(value);
 }

@@ -2,11 +2,11 @@
 
 namespace CodeMe.ScaffoldCS.Templates.Render.PartSymbols;
 
-public readonly struct TemplateActionSymbol(Action<ITemplatePartWriter> callback) : ITemplatePartSymbol
+public readonly struct TemplateActionSymbol(Action<Template> callback) : ITemplateSymbol
 {
-    public void Render(ITemplatePartWriter writer)
+    public void Render(Template template)
     {
-        using var _ = writer.BeginMultilineStringScope();
-        callback(writer);
+        using var _ = template.BeginMultilineStringScope();
+        callback(template);
     }
 }

@@ -4,16 +4,16 @@ namespace CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
 
 public readonly struct ValueSymbol<T>(T value, int alignment = 0, string? format = null) : ITemplateValueSymbol
 {
-    public void Render(ITemplateValueWriter writer)
+    public void Render(Template template)
     {
         var hasFormat = alignment != 0 || format != null;
         if (hasFormat)
         {
-            writer.Write(value, alignment, format);
+            template.Write(value, alignment, format);
         }
         else
         {
-            writer.Write(value);
+            template.Write(value);
         }
     }
 }

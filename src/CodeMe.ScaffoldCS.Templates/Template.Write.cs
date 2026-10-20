@@ -1,256 +1,305 @@
 ﻿using System.Collections;
-using System.Runtime.CompilerServices;
 using CodeMe.ScaffoldCS.Templates.Infrastructure;
 using CodeMe.ScaffoldCS.Templates.Internals;
 using CodeMe.ScaffoldCS.Templates.Output;
 using CodeMe.ScaffoldCS.Templates.Render;
+using CodeMe.ScaffoldCS.Templates.Render.PartSymbols;
+using CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
 
 namespace CodeMe.ScaffoldCS.Templates;
 
 public partial class Template
 {
-    public Template SetLineHandling(CurrentLineHandlingMode lineHandling)
+    private readonly List<ITemplateValueSymbol> _buffer = new();
+
+    public Template SetCurrentLineHandling(CurrentLineHandlingMode lineHandling)
     {
-        if (ShouldWrite)
+        if (!_branchState.ShouldWrite)
         {
-            _writer.SetCurrentLineHandling(lineHandling);
+            return this;
         }
 
+        if (IsBuffered)
+        {
+            _buffer.Add(new LineHandlingSymbol(lineHandling));
+            return this;
+        }
+
+        _textWriter.SetCurrentLineHandling(lineHandling);
         return this;
     }
 
     public Template ClearLine()
     {
-        if (ShouldWrite)
+        if (!_branchState.ShouldWrite)
         {
-            _writer.ClearLine();
+            return this;
         }
 
+        if (IsBuffered)
+        {
+            _buffer.Add(new ClearLineSymbol());
+            return this;
+        }
+
+        _textWriter.ClearLine();
         return this;
     }
 
     public Template WriteLine()
     {
-        if (ShouldWrite)
+        if (!_branchState.ShouldWrite)
         {
-            _writer.AppendLine();
+            return this;
         }
 
+        if (IsBuffered)
+        {
+            _buffer.Add(new NewLineSymbol());
+            return this;
+        }
+
+        _textWriter.AppendLine();
         return this;
     }
 
     public Template WriteLiteral(string? value)
     {
-        if (ShouldWrite)
+        if (!_branchState.ShouldWrite)
         {
-            _writer.Append(value);
+            return this;
         }
 
+        if (IsBuffered)
+        {
+            _buffer.Add(new LiteralSymbol(value));
+            return this;
+        }
+
+        _textWriter.Append(value);
         return this;
     }
 
-    public Template WriteLiteral(ReadOnlyMemory<string> value)
+    public Template WriteLiteral(ReadOnlyMemory<char> value)
     {
-        if (ShouldWrite)
+        if (!_branchState.ShouldWrite)
         {
-            _writer.Append(value);
+            return this;
         }
 
+        if (IsBuffered)
+        {
+            _buffer.Add(new LiteralSymbol(value));
+            return this;
+        }
+
+        _textWriter.Append(value);
         return this;
     }
 
     public Template WriteLiteral(ReadOnlySpan<char> value)
     {
-        if (ShouldWrite)
+        if (!_branchState.ShouldWrite)
         {
-            _writer.Append(value);
+            return this;
         }
 
+        if (IsBuffered)
+        {
+            _buffer.Add(new LiteralSymbol(value.ToArray()));
+            return this;
+        }
+
+        _textWriter.Append(value);
         return this;
     }
 
     public Template Write(string? value)
     {
-        Write(value.AsSpan());
+        if (!_branchState.ShouldWrite)
+        {
+            return this;
+        }
+
+        if (IsBuffered)
+        {
+            _buffer.Add(new ValueSymbol<string?>(value));
+            return this;
+        }
+
+        if (value.IsMultiline())
+        {
+            using var _ = this.BeginMultilineStringScope();
+            _textWriter.Append(value);
+            return this;
+        }
+
+        _textWriter.Append(value);
         return this;
     }
 
     public Template Write(string? value, int alignment)
     {
-        Write(value.AsSpan(), alignment);
-        return this;
-    }
+        if (!_branchState.ShouldWrite)
+        {
+            return this;
+        }
 
-    public Template WriteLine(string? value)
-    {
-        Write(value);
-        WriteLine();
+        if (IsBuffered)
+        {
+            _buffer.Add(new ValueSymbol<string?>(value, alignment));
+            return this;
+        }
 
+        if (value.IsMultiline())
+        {
+            using var _ = this.BeginMultilineStringScope();
+            _textWriter.Append(value);
+            return this;
+        }
+
+        _textWriter.Append(value, alignment);
         return this;
     }
 
     public Template Write(ReadOnlyMemory<char> value)
     {
-        Write(value.Span);
+        if (!_branchState.ShouldWrite)
+        {
+            return this;
+        }
 
+        if (IsBuffered)
+        {
+            _buffer.Add(new ValueSymbol<ReadOnlyMemory<char>>(value));
+            return this;
+        }
+
+        if (value.Span.IsMultiline())
+        {
+            using var _ = this.BeginMultilineStringScope();
+            _textWriter.Append(value);
+            return this;
+        }
+
+        _textWriter.Append(value);
         return this;
     }
 
     public Template Write(ReadOnlyMemory<char> value, int alignment)
     {
-        Write(value.Span, alignment);
+        if (!_branchState.ShouldWrite)
+        {
+            return this;
+        }
 
-        return this;
-    }
+        if (IsBuffered)
+        {
+            _buffer.Add(new ValueSymbol<ReadOnlyMemory<char>>(value, alignment));
+            return this;
+        }
 
-    public Template WriteLine(ReadOnlyMemory<char> value)
-    {
-        WriteLine(value.Span);
+        if (value.Span.IsMultiline())
+        {
+            using var _ = this.BeginMultilineStringScope();
+            _textWriter.Append(value);
+            return this;
+        }
 
+        _textWriter.Append(value, alignment);
         return this;
     }
 
     public Template Write(ReadOnlySpan<char> value)
     {
-        if (ShouldWrite)
+        if (!_branchState.ShouldWrite)
         {
-            if (value.IsMultiline())
-            {
-                using var _ = BeginOptionsScope(IndentationFormat.CurrentLine);
-                _writer.Append(value);
-            }
-            else
-            {
-                _writer.Append(value);
-            }
+            return this;
         }
 
+        if (IsBuffered)
+        {
+            _buffer.Add(new ValueSymbol<string?>(value.ToString()));
+            return this;
+        }
+
+        if (value.IsMultiline())
+        {
+            using var _ = this.BeginMultilineStringScope();
+            _textWriter.Append(value);
+            return this;
+        }
+
+        _textWriter.Append(value);
         return this;
     }
 
     public Template Write(ReadOnlySpan<char> value, int alignment)
     {
-        if (ShouldWrite)
+        if (!_branchState.ShouldWrite)
         {
-            if (value.IsMultiline())
-            {
-                using var _ = BeginOptionsScope(IndentationFormat.CurrentLine);
-                _writer.Append(value, alignment);
-            }
-            else
-            {
-                _writer.Append(value, alignment);
-            }
+            return this;
         }
 
-        return this;
-    }
-
-    public Template WriteLine(ReadOnlySpan<char> value)
-    {
-        Write(value);
-        WriteLine();
-
-        return this;
-    }
-
-    public Template Write(IEnumerable value)
-    {
-        if (ShouldWrite)
+        if (IsBuffered)
         {
-            value.Cast<object>().Render(DefaultCollectionRenderOptions).Render(this);
+            _buffer.Add(new ValueSymbol<string?>(value.ToString(), alignment));
+            return this;
         }
 
-        return this;
-    }
-
-    public Template Write(IEnumerable value, int alignment, string? format = null)
-    {
-        if (ShouldWrite)
+        if (value.IsMultiline())
         {
-            var options = DefaultCollectionRenderOptions with
-            {
-                Alignment = alignment,
-                Format = format
-            };
-            value.Cast<object>().Render(options).Render(this);
+            using var _ = this.BeginMultilineStringScope();
+            _textWriter.Append(value);
+            return this;
         }
 
-        return this;
-    }
-
-    public Template Write<T>(IEnumerable<T> value)
-    {
-        if (ShouldWrite)
-        {
-            value.Render(DefaultCollectionRenderOptions).Render(this);
-        }
-
-        return this;
-    }
-
-    public Template Write<T>(IEnumerable<T> value, int alignment, string? format = null)
-    {
-        if (ShouldWrite)
-        {
-            var options = DefaultCollectionRenderOptions with
-            {
-                Alignment = alignment,
-                Format = format
-            };
-            value.Render(options).Render(this);
-        }
-
-        return this;
-    }
-
-    public Template Write([InterpolatedStringHandlerArgument("")] TemplateString value) => this;
-
-    public Template WriteLine([InterpolatedStringHandlerArgument("")] TemplateString value)
-    {
-        Write(value);
-        WriteLine();
-
-        return this;
-    }
-
-    public Template Write(ITemplateValueSymbol value)
-    {
-        if (ShouldWrite || value is ITemplateControlSymbol)
-        {
-            value.Render(this);
-        }
-
+        _textWriter.Append(value, alignment);
         return this;
     }
 
     public Template Write<T>(T? value)
     {
-        if (value is null)
+        if (value is ITemplateControlSymbol)
         {
-            Write((string?)null);
+            ((ITemplateControlSymbol)value).Render(this);
             return this;
         }
 
-        if (value is string @string)
+        if (value is string s)
         {
-            Write(@string);
+            Write(s);
             return this;
         }
 
-        if (value is ReadOnlyMemory<char> memory)
+        if (value is ReadOnlyMemory<char> c)
         {
-            Write(memory);
+            Write(c);
             return this;
         }
 
-        if (value is ITemplateValueSymbol)
+        if (!_branchState.ShouldWrite)
         {
-            if (ShouldWrite || value is ITemplateControlSymbol)
+            return this;
+        }
+
+        if (value is ITemplateValueSymbol && IsBuffered)
+        {
+            if (IsBuffered)
+            {
+                _buffer.Add((ITemplateValueSymbol)value);
+            }
+            else
             {
                 ((ITemplateValueSymbol)value).Render(this);
             }
 
+            return this;
+        }
+
+        if (value is ITemplateSymbol)
+        {
+            ((ITemplateSymbol)value).Render(this);
             return this;
         }
 
@@ -259,15 +308,22 @@ public partial class Template
             return this;
         }
 
-        if (value is IEnumerable enumerable)
+        if (value is IEnumerable)
         {
-            Write(enumerable);
+            ((IEnumerable)value)
+                .Cast<object>()
+                .Render(DefaultCollectionRenderOptions)
+                .Render(this);
             return this;
         }
 
-        if (ShouldWrite)
+        if (IsBuffered)
         {
-            _writer.Append(value);
+            _buffer.Add(new ValueSymbol<T?>(value));
+        }
+        else
+        {
+            _textWriter.Append(value);
         }
 
         return this;
@@ -275,31 +331,46 @@ public partial class Template
 
     public Template Write<T>(T? value, int alignment, string? format = null)
     {
-        if (value is null)
+        if (value is ITemplateControlSymbol)
         {
-            Write((string?)null);
+            ((ITemplateControlSymbol)value).Render(this);
             return this;
         }
 
-        if (value is string @string)
+        if (value is string s)
         {
-            Write(@string, alignment);
+            Write(s, alignment);
             return this;
         }
 
-        if (value is ReadOnlyMemory<char> memory)
+        if (value is ReadOnlyMemory<char> c)
         {
-            Write(memory, alignment);
+            Write(c, alignment);
             return this;
         }
 
-        if (value is ITemplateValueSymbol)
+        if (!_branchState.ShouldWrite)
         {
-            if (ShouldWrite || value is ITemplateControlSymbol)
+            return this;
+        }
+
+        if (value is ITemplateValueSymbol && IsBuffered)
+        {
+            if (IsBuffered)
+            {
+                _buffer.Add((ITemplateValueSymbol)value);
+            }
+            else
             {
                 ((ITemplateValueSymbol)value).Render(this);
             }
 
+            return this;
+        }
+
+        if (value is ITemplateSymbol)
+        {
+            ((ITemplateSymbol)value).Render(this);
             return this;
         }
 
@@ -308,24 +379,37 @@ public partial class Template
             return this;
         }
 
-        if (value is IEnumerable enumerable)
+        if (value is IEnumerable)
         {
-            Write(enumerable, alignment, format);
+            ((IEnumerable)value)
+                .Cast<object>()
+                .Render(
+                    DefaultCollectionRenderOptions with
+                    {
+                        Alignment = alignment,
+                        Format = format
+                    })
+                .Render(this);
             return this;
         }
 
-        if (ShouldWrite)
+        if (IsBuffered)
         {
-            _writer.Append(value, alignment, format);
+            _buffer.Add(new ValueSymbol<T?>(value));
+        }
+        else
+        {
+            _textWriter.Append(value, alignment, format);
         }
 
         return this;
     }
 
-    public Template WriteLine<T>(T? value)
-    {
-        Write(value);
-        WriteLine();
-        return this;
-    }
+    public Template Write(Action<Template> callback) => Write(new TemplateActionSymbol(callback));
+
+    public Template Write(Func<TemplateString> callback) => Write(new TemplateStringSymbol(callback));
+
+    public Template Write(IEnumerable values) => Write(values.Cast<object>().Render(DefaultCollectionRenderOptions));
+
+    public Template Write<T>(IEnumerable<T> values) => Write(values.Render(DefaultCollectionRenderOptions));
 }

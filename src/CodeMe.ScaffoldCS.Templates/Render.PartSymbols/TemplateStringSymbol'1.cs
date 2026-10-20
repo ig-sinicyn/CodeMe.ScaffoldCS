@@ -2,12 +2,15 @@
 
 namespace CodeMe.ScaffoldCS.Templates.Render.PartSymbols;
 
-public readonly struct TemplateStringSymbol<TTemplatePart>(Func<TemplateString> callback) : ITemplatePartSymbol
+public readonly struct TemplateStringSymbol<TTemplatePart>(Func<TTemplatePart> callback) : ITemplateSymbol
     where TTemplatePart : IInterpolatedString
 {
-    public void Render(ITemplatePartWriter writer)
+    public static TemplateStringSymbol<TTemplatePart> Create<T>(T value, Func<T, TTemplatePart> callback) =>
+        new(() => callback(value));
+
+    public void Render(Template template)
     {
-        using var _ = writer.BeginMultilineStringScope();
-        callback();
+        using var _ = template.BeginMultilineStringScope();
+        template.Write(callback());
     }
 }

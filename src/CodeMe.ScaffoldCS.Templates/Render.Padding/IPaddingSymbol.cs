@@ -1,8 +1,9 @@
 ﻿using System.Text;
+using CodeMe.ScaffoldCS.Templates.Internals;
 
-namespace CodeMe.ScaffoldCS.Templates.Internals.Padding;
+namespace CodeMe.ScaffoldCS.Templates.Render.Padding;
 
-public interface IPaddingSymbol : ITemplatePartSymbol
+public interface IPaddingSymbol : ITemplateValueSymbol
 {
     IPaddingColumn? Column { get; set; }
 

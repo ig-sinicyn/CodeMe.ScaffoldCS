@@ -4,5 +4,5 @@ namespace CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
 
 public readonly struct ClearLineSymbol : ITemplateValueSymbol
 {
-    public void Render(ITemplateValueWriter writer) => writer.ClearLine();
+    public void Render(Template template) => template.ClearLine();
 }

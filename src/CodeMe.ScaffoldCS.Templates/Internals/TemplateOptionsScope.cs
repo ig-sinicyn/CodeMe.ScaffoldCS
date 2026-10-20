@@ -4,22 +4,22 @@ namespace CodeMe.ScaffoldCS.Templates.Internals;
 
 public readonly struct TemplateOptionsScope : IDisposable
 {
-    private readonly ITemplateValueWriter _owner;
+    private readonly Template _owner;
     private readonly object? _scopeValue;
 
-    public TemplateOptionsScope(ITemplateValueWriter owner, TemplateTextWriterOptions options)
+    public TemplateOptionsScope(Template owner, TemplateTextWriterOptions options)
     {
         _owner = owner;
         _scopeValue = options;
     }
 
-    public TemplateOptionsScope(ITemplateValueWriter owner, Action customDispose)
+    public TemplateOptionsScope(Template owner, Action<Template> customDispose)
     {
         _owner = owner;
         _scopeValue = customDispose;
     }
 
-    public TemplateOptionsScope(ITemplateValueWriter owner, IDisposable customDispose)
+    public TemplateOptionsScope(Template owner, IDisposable customDispose)
     {
         _owner = owner;
         _scopeValue = customDispose;
@@ -30,11 +30,11 @@ public readonly struct TemplateOptionsScope : IDisposable
         switch (_scopeValue)
         {
             case TemplateTextWriterOptions options:
-                _owner.SetOptions(options);
+                _owner.EndOptionsScope(options);
                 break;
 
-            case Action disposeCallback:
-                disposeCallback();
+            case Action<Template> disposeCallback:
+                disposeCallback(_owner);
                 break;
 
             case IDisposable disposable:

@@ -22,7 +22,7 @@ public interface IInterpolatedString
 
     void AppendFormatted<T>(T? value, string? format);
 
-    void AppendFormatted(Action<ITemplatePartWriter> callback);
+    void AppendFormatted(Action<Template> callback);
 
     void AppendFormatted(Func<TemplateString> callback);
 
