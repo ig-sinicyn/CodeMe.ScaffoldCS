@@ -3,6 +3,7 @@ using System.Text;
 using CodeMe.ScaffoldCS.Templates.Infrastructure;
 using CodeMe.ScaffoldCS.Templates.Internals;
 using CodeMe.ScaffoldCS.Templates.Output;
+using CodeMe.ScaffoldCS.Templates.Render;
 using CodeMe.ScaffoldCS.Templates.Render.Padding;
 using CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
 
@@ -55,11 +56,18 @@ public partial class Template
         StopBuffering();
     }
 
-    public PaddingScope BeginPaddingScope(string? name = null)
+    public PaddingScope BeginPaddingScope(PaddingRenderOptions? paddingOptions) =>
+        BeginPaddingScope(Guid.NewGuid().ToString(), paddingOptions);
+
+    public PaddingScope BeginPaddingScope(string name, PaddingRenderOptions? paddingOptions)
     {
-        name ??= Guid.NewGuid().ToString();
         var oldPadding = CurrentPadding;
-        CurrentPadding = _paddings.GetOrAdd(name, x => new PaddingCollection(x));
+        CurrentPadding = _paddings.GetOrAdd(
+            name,
+            x => new PaddingCollection(x)
+            {
+                Options = paddingOptions ?? DefaultPaddingOptions
+            });
 
         var rootScope = StartBuffering();
         return new PaddingScope(this, oldPadding, rootScope);

@@ -11,11 +11,5 @@ public partial class Template
         private readonly TemplateTextWriter.TestAccessor _writerAccessor = owner._textWriter.GetTestAccessor();
 
         public TextWriter Output => _writerAccessor.Output;
-
-        public IReadOnlyCollection<TemplateTextWriterOptions> OptionsStack => owner._optionsStack;
-
-        public BranchState CurrentBranch => owner.CurrentBranch;
-
-        public IReadOnlyCollection<BranchState> BranchesStack => owner._branchesStack;
     }
 }

@@ -77,6 +77,21 @@ public class TemplateTests
     }
 
     [Fact]
+    public void Write_ShouldBeExpected()
+    {
+        // Arrange
+        var name = "user";
+        var writer = CreateTemplate();
+        using var _ = writer.BeginAmbientScope();
+
+        // Act
+        writer.Write($"Hello, {name}!");
+
+        // Assert
+        writer.ShouldBe("Hello, user!");
+    }
+
+    [Fact]
     public void TestScenario_EmptyProperties_ShouldBeExpected()
     {
         // Arrange

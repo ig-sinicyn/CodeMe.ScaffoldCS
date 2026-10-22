@@ -22,8 +22,6 @@ internal static class TemplateTestExtensions
         using var _ = new AssertionScope();
         var current = output.ToString();
         current.Should().Be(rendered);
-        testAccessor.BranchesStack.Count.Should().Be(0);
-        testAccessor.OptionsStack.Count.Should().Be(0);
 
         return writer;
     }

@@ -4,7 +4,7 @@ public class ConditionBranchState
 {
     private readonly Stack<BranchState> _branchStack = new();
 
-    public bool ShouldWrite { get; private set; }
+    public bool ShouldWrite { get; private set; } = true;
 
     public ConditionBranch CurrentBranch => Current.Branch;
 

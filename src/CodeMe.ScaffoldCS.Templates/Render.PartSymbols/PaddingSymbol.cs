@@ -1,10 +1,11 @@
 ﻿using System.Text;
 using CodeMe.ScaffoldCS.Templates.Internals;
-using CodeMe.ScaffoldCS.Templates.Internals.Padding;
+using CodeMe.ScaffoldCS.Templates.Render.Padding;
 
 namespace CodeMe.ScaffoldCS.Templates.Render.PartSymbols;
 
-public class PaddingSymbol<T>(T value, PaddingRenderOptions options) : IPaddingSymbol
+public class PaddingSymbol<T>(T value, PaddingRenderOptions options, int alignment = 0, string? format = null)
+    : IPaddingSymbol
 {
     private readonly PaddingMode _autoMode = typeof(T) switch
     {
@@ -20,35 +21,36 @@ public class PaddingSymbol<T>(T value, PaddingRenderOptions options) : IPaddingS
 
     public IPaddingColumn? Column { get; set; }
 
-    public void Render(ITemplatePartWriter writer)
+    public void Render(Template template)
     {
-        var actualWidth = _estimatedWidth ?? EstimateWidth(writer.Options.Culture);
+        var actualWidth = _estimatedWidth ?? EstimateWidth(template.CurrentOptions.Culture);
         var desiredWidth = Column?.ColumnWidth ?? actualWidth;
 
-        RenderPadding(writer, GetPrefixWidth(desiredWidth, actualWidth));
-        RenderCore(writer);
-        RenderPadding(writer, GetSuffixWidth(desiredWidth, actualWidth));
+        RenderPadding(template, GetPrefixWidth(desiredWidth, actualWidth));
+        RenderCore(template);
+        RenderPadding(template, GetSuffixWidth(desiredWidth, actualWidth));
     }
 
-    private void RenderPadding(ITemplatePartWriter writer, int paddingWidth)
+    private void RenderPadding(Template template, int paddingWidth)
     {
         if (paddingWidth > 0)
         {
             Span<char> span = stackalloc char[paddingWidth];
             span.Fill(options.PaddingChar);
-            writer.WriteLiteral(span);
+            template.WriteLiteral(span);
         }
     }
 
-    private void RenderCore(ITemplatePartWriter writer)
+    private void RenderCore(Template template)
     {
-        if (options.Format == null)
+        var hasFormat = alignment != 0 || format != null;
+        if (hasFormat)
         {
-            writer.Write(value);
+            template.Write(value, alignment, format);
         }
         else
         {
-            writer.Write(value, 0, options.Format);
+            template.Write(value);
         }
     }
 
@@ -92,7 +94,7 @@ public class PaddingSymbol<T>(T value, PaddingRenderOptions options) : IPaddingS
 
         var oldLength = buffer.Length;
         new StringBuilder.AppendInterpolatedStringHandler(0, 0, buffer, formatProvider)
-            .AppendFormatted(value, options.Format);
+            .AppendFormatted(value, format);
 
         var delta = buffer.Length - oldLength;
         var result = Math.Min(options.MinLength, delta);

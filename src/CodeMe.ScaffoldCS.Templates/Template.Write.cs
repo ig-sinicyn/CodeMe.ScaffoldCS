@@ -63,22 +63,8 @@ public partial class Template
         return this;
     }
 
-    public Template WriteLiteral(string? value)
-    {
-        if (!_branchState.ShouldWrite)
-        {
-            return this;
-        }
-
-        if (IsBuffered)
-        {
-            _buffer.Add(new LiteralSymbol(value));
-            return this;
-        }
-
-        _textWriter.Append(value);
-        return this;
-    }
+    public Template WriteLiteral(string? value) =>
+        WriteLiteral(value.AsMemory());
 
     public Template WriteLiteral(ReadOnlyMemory<char> value)
     {
@@ -114,53 +100,9 @@ public partial class Template
         return this;
     }
 
-    public Template Write(string? value)
-    {
-        if (!_branchState.ShouldWrite)
-        {
-            return this;
-        }
+    public Template Write(string? value) => Write(value.AsMemory());
 
-        if (IsBuffered)
-        {
-            _buffer.Add(new ValueSymbol<string?>(value));
-            return this;
-        }
-
-        if (value.IsMultiline())
-        {
-            using var _ = this.BeginMultilineStringScope();
-            _textWriter.Append(value);
-            return this;
-        }
-
-        _textWriter.Append(value);
-        return this;
-    }
-
-    public Template Write(string? value, int alignment)
-    {
-        if (!_branchState.ShouldWrite)
-        {
-            return this;
-        }
-
-        if (IsBuffered)
-        {
-            _buffer.Add(new ValueSymbol<string?>(value, alignment));
-            return this;
-        }
-
-        if (value.IsMultiline())
-        {
-            using var _ = this.BeginMultilineStringScope();
-            _textWriter.Append(value);
-            return this;
-        }
-
-        _textWriter.Append(value, alignment);
-        return this;
-    }
+    public Template Write(string? value, int alignment) => Write(value.AsMemory(), alignment);
 
     public Template Write(ReadOnlyMemory<char> value)
     {
@@ -171,7 +113,15 @@ public partial class Template
 
         if (IsBuffered)
         {
-            _buffer.Add(new ValueSymbol<ReadOnlyMemory<char>>(value));
+            if (CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
+            {
+                _buffer.Add(new PaddingSymbol<ReadOnlyMemory<char>>(value, padOptions));
+            }
+            else
+            {
+                _buffer.Add(new ValueSymbol<ReadOnlyMemory<char>>(value));
+            }
+
             return this;
         }
 
@@ -195,14 +145,22 @@ public partial class Template
 
         if (IsBuffered)
         {
-            _buffer.Add(new ValueSymbol<ReadOnlyMemory<char>>(value, alignment));
+            if (CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
+            {
+                _buffer.Add(new PaddingSymbol<ReadOnlyMemory<char>>(value, padOptions, alignment));
+            }
+            else
+            {
+                _buffer.Add(new ValueSymbol<ReadOnlyMemory<char>>(value, alignment));
+            }
+
             return this;
         }
 
         if (value.Span.IsMultiline())
         {
             using var _ = this.BeginMultilineStringScope();
-            _textWriter.Append(value);
+            _textWriter.Append(value, alignment);
             return this;
         }
 
@@ -219,7 +177,15 @@ public partial class Template
 
         if (IsBuffered)
         {
-            _buffer.Add(new ValueSymbol<string?>(value.ToString()));
+            if (CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
+            {
+                _buffer.Add(new PaddingSymbol<ReadOnlyMemory<char>>(value.ToArray(), padOptions));
+            }
+            else
+            {
+                _buffer.Add(new ValueSymbol<ReadOnlyMemory<char>>(value.ToArray()));
+            }
+
             return this;
         }
 
@@ -243,7 +209,15 @@ public partial class Template
 
         if (IsBuffered)
         {
-            _buffer.Add(new ValueSymbol<string?>(value.ToString(), alignment));
+            if (CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
+            {
+                _buffer.Add(new PaddingSymbol<ReadOnlyMemory<char>>(value.ToArray(), padOptions, alignment));
+            }
+            else
+            {
+                _buffer.Add(new ValueSymbol<ReadOnlyMemory<char>>(value.ToArray(), alignment));
+            }
+
             return this;
         }
 
@@ -283,7 +257,7 @@ public partial class Template
             return this;
         }
 
-        if (value is ITemplateValueSymbol && IsBuffered)
+        if (value is ITemplateValueSymbol)
         {
             if (IsBuffered)
             {
@@ -319,13 +293,19 @@ public partial class Template
 
         if (IsBuffered)
         {
-            _buffer.Add(new ValueSymbol<T?>(value));
-        }
-        else
-        {
-            _textWriter.Append(value);
+            if (CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
+            {
+                _buffer.Add(new PaddingSymbol<T?>(value, padOptions));
+            }
+            else
+            {
+                _buffer.Add(new ValueSymbol<T?>(value));
+            }
+
+            return this;
         }
 
+        _textWriter.Append(value);
         return this;
     }
 
@@ -354,7 +334,7 @@ public partial class Template
             return this;
         }
 
-        if (value is ITemplateValueSymbol && IsBuffered)
+        if (value is ITemplateValueSymbol)
         {
             if (IsBuffered)
             {
@@ -395,15 +375,24 @@ public partial class Template
 
         if (IsBuffered)
         {
-            _buffer.Add(new ValueSymbol<T?>(value));
+            if (CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
+            {
+                _buffer.Add(new PaddingSymbol<T?>(value, padOptions, alignment, format));
+            }
+            else
+            {
+                _buffer.Add(new ValueSymbol<T?>(value, alignment, format));
+            }
+
+            return this;
         }
-        else
-        {
-            _textWriter.Append(value, alignment, format);
-        }
+
+        _textWriter.Append(value, alignment, format);
 
         return this;
     }
+
+    public Template Write(TemplateString templateString) => Write<TemplateString>(templateString);
 
     public Template Write(Action<Template> callback) => Write(new TemplateActionSymbol(callback));
 

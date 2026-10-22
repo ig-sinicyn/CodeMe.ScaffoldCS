@@ -5,14 +5,28 @@ namespace CodeMe.ScaffoldCS.Templates.Render.PartSymbols;
 public readonly struct CollectionSymbol<T>(
     IEnumerable<T> source,
     Func<T, TemplateString>? callback,
-    CollectionRenderOptions options) : ITemplateSymbol
+    CollectionRenderOptions options,
+    PaddingRenderOptions? paddingOptions = null) : ITemplateSymbol
 {
     public void Render(Template template)
     {
+        using var _ = template.BeginMultilineStringScope();
+
+        // TODO: paddingGroup
+        if (paddingOptions != null)
+        {
+            using var __ = template.BeginPaddingScope(paddingOptions);
+            RenderCore(template);
+            return;
+        }
+
+        RenderCore(template);
+    }
+
+    private void RenderCore(Template template)
+    {
         var hasFormat = options.Alignment != 0 || options.Format != null;
         var hasItem = false;
-
-        using var _ = template.BeginMultilineStringScope();
         foreach (var item in source)
         {
             if (hasItem && !string.IsNullOrEmpty(options.Separator))
@@ -33,6 +47,7 @@ public readonly struct CollectionSymbol<T>(
                 template.Write(item);
             }
 
+            template.CurrentPadding?.NextItem();
             hasItem = true;
         }
 

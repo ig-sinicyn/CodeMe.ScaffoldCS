@@ -48,7 +48,7 @@ public readonly struct IfFalseTemplateString<TCondition> : IInterpolatedString
 
     public void AppendFormatted<T>(T? value, string? format) => _template.Write(value, alignment: 0, format);
 
-    public void AppendFormatted(Action<ITemplatePartWriter> callback) => _template.Write(callback);
+    public void AppendFormatted(Action<Template> callback) => _template.Write(callback);
 
     public void AppendFormatted(Func<TemplateString> callback) => _template.Write(callback);
 
