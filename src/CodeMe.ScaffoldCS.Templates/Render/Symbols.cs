@@ -23,14 +23,14 @@ public static class Symbols
     public static LineHandlingSymbol Comment(string comment) => new(_macroLineHandling);
 
     public static ConditionBranchSymbol If<T>(T condition) => new(
-        (ConditionBranch)ConditionBranch.IfBranch, Conditions.HasValue(condition), (CurrentLineHandlingMode?)_macroLineHandling);
+        ConditionBranch.IfBranch, Conditions.HasValue(condition), _macroLineHandling);
 
     public static ConditionBranchSymbol ElseIf<T>(T condition) => new(
-        (ConditionBranch)ConditionBranch.ElseIfBranch, Conditions.HasValue(condition), (CurrentLineHandlingMode?)_macroLineHandling);
+        ConditionBranch.ElseIfBranch, Conditions.HasValue(condition), _macroLineHandling);
 
-    public static readonly ConditionBranchSymbol Else = new((ConditionBranch)ConditionBranch.ElseBranch, (bool)false, (CurrentLineHandlingMode?)_macroLineHandling);
+    public static readonly ConditionBranchSymbol Else = new(ConditionBranch.ElseBranch, false, _macroLineHandling);
 
-    public static readonly ConditionBranchSymbol EndIf = new((ConditionBranch)ConditionBranch.None, (bool)false, (CurrentLineHandlingMode?)_macroLineHandling);
+    public static readonly ConditionBranchSymbol EndIf = new(ConditionBranch.None, false, _macroLineHandling);
 
     public static ConditionSymbol<TTrue> Iif<T, TTrue>(T condition, TTrue trueValue) =>
         new(Conditions.HasValue(condition), trueValue);

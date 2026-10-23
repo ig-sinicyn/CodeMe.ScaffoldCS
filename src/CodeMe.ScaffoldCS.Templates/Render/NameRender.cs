@@ -87,7 +87,7 @@ public static class NameRender
         }
 
         // Order by descending so prefixes with greater length will be checked first.
-        // Soring is required to handle cases when we trim PrefixTestSuffix1 with prefixes (Pre, Prefix1).
+        // Soring is required to handle cases when we trim Prefix1TestSuffix1 with prefixes (Pre, Prefix1).
         var prefixesToCheck = prefixes.ToArray().AsSpan();
         prefixesToCheck.Sort(StringComparer.Ordinal);
         prefixesToCheck.Reverse();

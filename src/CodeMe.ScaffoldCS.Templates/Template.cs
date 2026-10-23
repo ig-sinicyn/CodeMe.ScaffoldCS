@@ -38,7 +38,19 @@ public sealed partial class Template : IDisposable
                     + $" or disable the {nameof(ValidateOnClose)} option.");
             }
 
-            // todo: options count / other scope count
+            if (IsBuffered)
+            {
+                throw new InvalidOperationException(
+                    "There is unclosed buffering scope. Please dispose all open scopes"
+                    + $" or disable the {nameof(ValidateOnClose)} option.");
+            }
+
+            if (CurrentPadding != null)
+            {
+                throw new InvalidOperationException(
+                    "There is unclosed padding scope. Please dispose all open scopes"
+                    + $" or disable the {nameof(ValidateOnClose)} option.");
+            }
         }
 
         _textWriter.Dispose();

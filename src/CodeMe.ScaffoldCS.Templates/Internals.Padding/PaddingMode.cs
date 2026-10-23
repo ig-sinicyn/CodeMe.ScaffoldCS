@@ -1,4 +1,4 @@
-﻿namespace CodeMe.ScaffoldCS.Templates.Internals;
+﻿namespace CodeMe.ScaffoldCS.Templates.Internals.Padding;
 
 public enum PaddingMode
 {

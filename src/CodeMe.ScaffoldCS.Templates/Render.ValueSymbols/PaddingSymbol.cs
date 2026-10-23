@@ -1,8 +1,8 @@
 ﻿using System.Text;
 using CodeMe.ScaffoldCS.Templates.Internals;
-using CodeMe.ScaffoldCS.Templates.Render.Padding;
+using CodeMe.ScaffoldCS.Templates.Internals.Padding;
 
-namespace CodeMe.ScaffoldCS.Templates.Render.PartSymbols;
+namespace CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
 
 public class PaddingSymbol<T>(T value, PaddingRenderOptions options, int alignment = 0, string? format = null)
     : IPaddingSymbol
@@ -24,7 +24,7 @@ public class PaddingSymbol<T>(T value, PaddingRenderOptions options, int alignme
     public void Render(Template template)
     {
         var actualWidth = _estimatedWidth ?? EstimateWidth(template.CurrentOptions.Culture);
-        var desiredWidth = Column?.ColumnWidth ?? actualWidth;
+        var desiredWidth = Column?.Width ?? actualWidth;
 
         RenderPadding(template, GetPrefixWidth(desiredWidth, actualWidth));
         RenderCore(template);

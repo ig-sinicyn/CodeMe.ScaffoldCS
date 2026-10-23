@@ -1,10 +1,10 @@
-﻿namespace CodeMe.ScaffoldCS.Templates.Render.Padding;
+﻿namespace CodeMe.ScaffoldCS.Templates.Internals.Padding;
 
 public interface IPaddingColumn
 {
     int Index { get; }
 
-    int ColumnWidth { get; }
+    int Width { get; }
 
     void ObserveValueWidth(int width);
 }

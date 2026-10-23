@@ -2,16 +2,16 @@
 using System.Text;
 using CodeMe.ScaffoldCS.Templates.Infrastructure;
 using CodeMe.ScaffoldCS.Templates.Internals;
+using CodeMe.ScaffoldCS.Templates.Internals.Padding;
 using CodeMe.ScaffoldCS.Templates.Output;
 using CodeMe.ScaffoldCS.Templates.Render;
-using CodeMe.ScaffoldCS.Templates.Render.Padding;
 using CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
 
 namespace CodeMe.ScaffoldCS.Templates;
 
 public partial class Template
 {
-    private readonly Dictionary<string, PaddingCollection> _paddings = new();
+    private readonly Dictionary<string, PaddingGroup> _paddings = new();
 
     public TemplateTextWriterOptions CurrentOptions
     {
@@ -19,9 +19,9 @@ public partial class Template
         set => _textWriter.Options = value;
     }
 
-    public IPaddingCollection? CurrentPadding { get; private set; }
-
     public bool IsBuffered { get; private set; }
+
+    public IPaddingGroup? CurrentPadding { get; private set; }
 
     public TemplateOptionsScope BeginOptionsScope(IndentationFormat indentation)
     {
@@ -39,16 +39,16 @@ public partial class Template
 
     internal void EndOptionsScope(TemplateTextWriterOptions optionsToRestore) => _textWriter.Options = optionsToRestore;
 
-    public BufferingScope BeginBufferingScope()
+    public TemplateBufferingScope BeginBufferingScope()
     {
-        var rootScope = StartBuffering();
+        var bufferingStarted = StartBuffering();
 
-        return new BufferingScope(this, rootScope);
+        return new TemplateBufferingScope(this, stopBuffering: bufferingStarted);
     }
 
-    public void EndBufferingScope(bool rootScope)
+    public void EndBufferingScope(bool stopBuffering)
     {
-        if (!rootScope)
+        if (!stopBuffering)
         {
             return;
         }
@@ -56,30 +56,27 @@ public partial class Template
         StopBuffering();
     }
 
-    public PaddingScope BeginPaddingScope(PaddingRenderOptions? paddingOptions) =>
-        BeginPaddingScope(Guid.NewGuid().ToString(), paddingOptions);
-
-    public PaddingScope BeginPaddingScope(string name, PaddingRenderOptions? paddingOptions)
+    public TemplatePaddingScope BeginPaddingScope(PaddingRenderOptions? paddingOptions, string? name = null)
     {
+        name ??= Guid.NewGuid().ToString();
         var oldPadding = CurrentPadding;
-        CurrentPadding = _paddings.GetOrAdd(
+        CurrentPadding = _paddings.GetOrUpdate(
             name,
-            x => new PaddingCollection(x)
-            {
-                Options = paddingOptions ?? DefaultPaddingOptions
-            });
+            x => new PaddingGroup(x, paddingOptions ?? DefaultPaddingOptions),
+            (_, g) => g.Options = paddingOptions ?? g.Options);
 
-        var rootScope = StartBuffering();
-        return new PaddingScope(this, oldPadding, rootScope);
+        var bufferingStarted = StartBuffering();
+        return new TemplatePaddingScope(this, oldPadding, stopBuffering: bufferingStarted);
     }
 
-    internal void EndPaddingScope(IPaddingCollection? paddingToRestore, bool stopBuffering)
+    internal void EndPaddingScope(IPaddingGroup? paddingToRestore, bool stopBuffering)
     {
-        CurrentPadding = paddingToRestore;
         if (stopBuffering)
         {
             StopBuffering();
         }
+
+        CurrentPadding = paddingToRestore;
     }
 
     private bool StartBuffering()
@@ -108,14 +105,14 @@ public partial class Template
         }
 
         var estimateBuffer = new StringBuilder();
-        foreach (var estimateSymbol in _buffer.OfType<IPaddingSymbol>())
+        foreach (var symbol in _buffer.OfType<IPaddingSymbol>())
         {
-            if (estimateSymbol.Column is not { } column)
+            if (symbol.Column is not { } column)
             {
                 continue;
             }
 
-            column.ObserveValueWidth(estimateSymbol.EstimateWidth(CurrentOptions.Culture, estimateBuffer));
+            column.ObserveValueWidth(symbol.EstimateWidth(CurrentOptions.Culture, estimateBuffer));
         }
 
         foreach (var symbol in _buffer)

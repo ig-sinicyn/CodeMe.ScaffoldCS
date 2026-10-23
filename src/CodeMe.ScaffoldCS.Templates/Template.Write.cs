@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using CodeMe.ScaffoldCS.Templates.Infrastructure;
 using CodeMe.ScaffoldCS.Templates.Internals;
+using CodeMe.ScaffoldCS.Templates.Internals.Padding;
 using CodeMe.ScaffoldCS.Templates.Output;
 using CodeMe.ScaffoldCS.Templates.Render;
 using CodeMe.ScaffoldCS.Templates.Render.PartSymbols;
@@ -12,7 +13,7 @@ public partial class Template
 {
     private readonly List<ITemplateValueSymbol> _buffer = new();
 
-    public Template SetCurrentLineHandling(CurrentLineHandlingMode lineHandling)
+    public Template SetLineHandling(CurrentLineHandlingMode lineHandling)
     {
         if (!_branchState.ShouldWrite)
         {

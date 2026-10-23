@@ -1,7 +1,6 @@
 ﻿using System.Text;
-using CodeMe.ScaffoldCS.Templates.Internals;
 
-namespace CodeMe.ScaffoldCS.Templates.Render.Padding;
+namespace CodeMe.ScaffoldCS.Templates.Internals.Padding;
 
 public interface IPaddingSymbol : ITemplateValueSymbol
 {

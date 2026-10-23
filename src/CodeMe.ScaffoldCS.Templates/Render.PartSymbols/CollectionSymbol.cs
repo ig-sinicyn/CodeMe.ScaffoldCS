@@ -6,16 +6,17 @@ public readonly struct CollectionSymbol<T>(
     IEnumerable<T> source,
     Func<T, TemplateString>? callback,
     CollectionRenderOptions options,
-    PaddingRenderOptions? paddingOptions = null) : ITemplateSymbol
+    PaddingRenderOptions? paddingOptions = null,
+    string? paddingGroupName = null) : ITemplateSymbol
 {
     public void Render(Template template)
     {
         using var _ = template.BeginMultilineStringScope();
 
-        // TODO: paddingGroup
+        // TODO: paddingGroup name
         if (paddingOptions != null)
         {
-            using var __ = template.BeginPaddingScope(paddingOptions);
+            using var __ = template.BeginPaddingScope(paddingGroupName, paddingOptions);
             RenderCore(template);
             return;
         }
