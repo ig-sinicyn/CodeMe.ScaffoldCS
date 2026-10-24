@@ -13,10 +13,9 @@ public readonly struct CollectionSymbol<T>(
     {
         using var _ = template.BeginMultilineStringScope();
 
-        // TODO: paddingGroup name
         if (paddingOptions != null)
         {
-            using var __ = template.BeginPaddingScope(paddingGroupName, paddingOptions);
+            using var __ = template.BeginPaddingScope(paddingOptions, paddingGroupName);
             RenderCore(template);
             return;
         }

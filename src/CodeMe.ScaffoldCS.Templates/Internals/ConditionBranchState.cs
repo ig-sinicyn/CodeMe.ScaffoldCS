@@ -4,6 +4,8 @@ public class ConditionBranchState
 {
     private readonly Stack<BranchState> _branchStack = new();
 
+    public bool IsEmpty => _branchStack.Count == 0;
+
     public bool ShouldWrite { get; private set; } = true;
 
     public ConditionBranch CurrentBranch => Current.Branch;

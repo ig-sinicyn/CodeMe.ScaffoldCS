@@ -2,7 +2,6 @@
 using System.Text;
 using CodeMe.ScaffoldCS.Templates.Infrastructure;
 using CodeMe.ScaffoldCS.Templates.Internals;
-using CodeMe.ScaffoldCS.Templates.Internals.Padding;
 using CodeMe.ScaffoldCS.Templates.Output;
 using CodeMe.ScaffoldCS.Templates.Render;
 using CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
@@ -56,8 +55,9 @@ public partial class Template
         StopBuffering();
     }
 
-    public TemplatePaddingScope BeginPaddingScope(PaddingRenderOptions? paddingOptions, string? name = null)
+    public TemplatePaddingScope BeginPaddingScope(PaddingRenderOptions? paddingOptions = null, string? name = null)
     {
+        // TODO: use padding options only for scope.
         name ??= Guid.NewGuid().ToString();
         var oldPadding = CurrentPadding;
         CurrentPadding = _paddings.GetOrUpdate(

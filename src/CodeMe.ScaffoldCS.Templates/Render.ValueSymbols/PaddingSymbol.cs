@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using CodeMe.ScaffoldCS.Templates.Internals;
-using CodeMe.ScaffoldCS.Templates.Internals.Padding;
 
 namespace CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
 
@@ -12,7 +11,7 @@ public class PaddingSymbol<T>(T value, PaddingRenderOptions options, int alignme
         var x when x == typeof(string) => PaddingMode.Left,
         var x when x == typeof(ReadOnlyMemory<char>) => PaddingMode.Left,
         var x when x == typeof(StringBuilder) => PaddingMode.Left,
-        var x when x.IsAssignableTo(typeof(ITemplateValueSymbol)) => PaddingMode.None,
+        var x when x.IsAssignableTo(typeof(ITemplateSymbol)) => PaddingMode.None,
         var x when x.IsAssignableTo(typeof(IInterpolatedString)) => PaddingMode.None,
         _ => PaddingMode.Right
     };
@@ -26,6 +25,7 @@ public class PaddingSymbol<T>(T value, PaddingRenderOptions options, int alignme
         var actualWidth = _estimatedWidth ?? EstimateWidth(template.CurrentOptions.Culture);
         var desiredWidth = Column?.Width ?? actualWidth;
 
+        // TODO: multiline scope
         RenderPadding(template, GetPrefixWidth(desiredWidth, actualWidth));
         RenderCore(template);
         RenderPadding(template, GetSuffixWidth(desiredWidth, actualWidth));
@@ -97,7 +97,7 @@ public class PaddingSymbol<T>(T value, PaddingRenderOptions options, int alignme
             .AppendFormatted(value, format);
 
         var delta = buffer.Length - oldLength;
-        var result = Math.Min(options.MinLength, delta);
+        var result = Math.Max(options.MinLength, delta);
         _estimatedWidth = result;
         return result;
     }

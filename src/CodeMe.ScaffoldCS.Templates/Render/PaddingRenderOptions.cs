@@ -1,4 +1,4 @@
-﻿using CodeMe.ScaffoldCS.Templates.Internals.Padding;
+﻿using CodeMe.ScaffoldCS.Templates.Internals;
 
 namespace CodeMe.ScaffoldCS.Templates.Render;
 

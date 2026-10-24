@@ -1,6 +1,6 @@
-﻿namespace CodeMe.ScaffoldCS.Templates.Internals.Padding;
+﻿namespace CodeMe.ScaffoldCS.Templates.Internals;
 
-public class PaddingColumn(int index) : IPaddingColumn
+public class PaddingColumn(int index)
 {
     public int Index => index;
 

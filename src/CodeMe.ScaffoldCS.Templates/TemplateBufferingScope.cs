@@ -1,6 +1,15 @@
 ﻿namespace CodeMe.ScaffoldCS.Templates;
 
-public readonly struct TemplateBufferingScope(Template owner, bool stopBuffering) : IDisposable
+public readonly struct TemplateBufferingScope : IDisposable
 {
-    public void Dispose() => owner.EndBufferingScope(stopBuffering);
+    private readonly Template _owner;
+    private readonly bool _stopBuffering;
+
+    internal TemplateBufferingScope(Template owner, bool stopBuffering)
+    {
+        _owner = owner;
+        _stopBuffering = stopBuffering;
+    }
+
+    public void Dispose() => _owner.EndBufferingScope(_stopBuffering);
 }
