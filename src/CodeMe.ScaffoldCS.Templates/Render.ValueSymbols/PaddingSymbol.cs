@@ -18,7 +18,7 @@ public class PaddingSymbol<T>(T value, PaddingRenderOptions options, int alignme
 
     private int? _estimatedWidth;
 
-    public IPaddingColumn? Column { get; set; }
+    public PaddingColumn? Column { get; set; }
 
     public void Render(Template template)
     {

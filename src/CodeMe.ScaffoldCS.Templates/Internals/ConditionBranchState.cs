@@ -12,6 +12,12 @@ public class ConditionBranchState
 
     private BranchState Current => _branchStack.TryPeek(out var x) ? x : BranchState.NoBranch;
 
+    public void Clear()
+    {
+        _branchStack.Clear();
+        ShouldWrite = true;
+    }
+
     public void BeginBranch(ConditionBranch branch, bool condition)
     {
         switch (branch)

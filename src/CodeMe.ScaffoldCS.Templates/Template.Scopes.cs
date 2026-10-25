@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Text;
-using CodeMe.ScaffoldCS.Templates.Infrastructure;
 using CodeMe.ScaffoldCS.Templates.Internals;
 using CodeMe.ScaffoldCS.Templates.Output;
 using CodeMe.ScaffoldCS.Templates.Render;
@@ -10,117 +9,45 @@ namespace CodeMe.ScaffoldCS.Templates;
 
 public partial class Template
 {
-    private readonly Dictionary<string, PaddingGroup> _paddings = new();
-
     public TemplateTextWriterOptions CurrentOptions
     {
-        get => _textWriter.Options;
-        set => _textWriter.Options = value;
+        get => _optionsState.Options;
+        set
+        {
+            _optionsState.Options = value;
+            _textWriter.Options = value;
+        }
     }
 
-    public bool IsBuffered { get; private set; }
+    public bool ShouldWrite => _branchState.ShouldWrite;
 
-    public IPaddingGroup? CurrentPadding { get; private set; }
+    public bool ShouldBuffer => _bufferState.ShouldBuffer;
+
+    public PaddingGroup? CurrentPadding => _bufferState.CurrentPadding;
 
     public TemplateOptionsScope BeginOptionsScope(IndentationFormat indentation)
     {
-        if (IsBuffered)
+        if (ShouldBuffer)
         {
-            var startSymbol = new TemplateOptionsScopeStartSymbol(indentation);
-            Write(startSymbol);
-            return new TemplateOptionsScope(this, x => x.Write(startSymbol.EndSymbol));
+            Write(new TemplateBeginOptionsScopeSymbol(indentation));
+            return new TemplateOptionsScope(this);
         }
 
-        var oldOptions = _textWriter.Options;
-        _textWriter.Options = _textWriter.CaptureOptions(indentation);
-        return new TemplateOptionsScope(this, oldOptions);
+        _optionsState.BeginOptionsScope(_textWriter.CaptureOptions(indentation));
+        _textWriter.Options = _optionsState.Options;
+        return new TemplateOptionsScope(this);
     }
 
-    internal void EndOptionsScope(TemplateTextWriterOptions optionsToRestore) => _textWriter.Options = optionsToRestore;
-
-    public TemplateBufferingScope BeginBufferingScope()
+    internal void CompleteOptionsScope()
     {
-        var bufferingStarted = StartBuffering();
-
-        return new TemplateBufferingScope(this, stopBuffering: bufferingStarted);
-    }
-
-    public void EndBufferingScope(bool stopBuffering)
-    {
-        if (!stopBuffering)
+        if (ShouldBuffer)
         {
+            Write(new TemplateCompleteOptionsScopeSymbol());
             return;
         }
 
-        StopBuffering();
-    }
-
-    public TemplatePaddingScope BeginPaddingScope(PaddingRenderOptions? paddingOptions = null, string? name = null)
-    {
-        // TODO: use padding options only for scope.
-        name ??= Guid.NewGuid().ToString();
-        var oldPadding = CurrentPadding;
-        CurrentPadding = _paddings.GetOrUpdate(
-            name,
-            x => new PaddingGroup(x, paddingOptions ?? DefaultPaddingOptions),
-            (_, g) => g.Options = paddingOptions ?? g.Options);
-
-        var bufferingStarted = StartBuffering();
-        return new TemplatePaddingScope(this, oldPadding, stopBuffering: bufferingStarted);
-    }
-
-    internal void EndPaddingScope(IPaddingGroup? paddingToRestore, bool stopBuffering)
-    {
-        if (stopBuffering)
-        {
-            StopBuffering();
-        }
-
-        CurrentPadding = paddingToRestore;
-    }
-
-    private bool StartBuffering()
-    {
-        if (IsBuffered)
-        {
-            return false;
-        }
-
-        IsBuffered = true;
-        return true;
-    }
-
-    private void StopBuffering()
-    {
-        if (!IsBuffered)
-        {
-            return;
-        }
-
-        IsBuffered = false;
-
-        if (_buffer.Count == 0)
-        {
-            return;
-        }
-
-        var estimateBuffer = new StringBuilder();
-        foreach (var symbol in _buffer.OfType<IPaddingSymbol>())
-        {
-            if (symbol.Column is not { } column)
-            {
-                continue;
-            }
-
-            column.ObserveValueWidth(symbol.EstimateWidth(CurrentOptions.Culture, estimateBuffer));
-        }
-
-        foreach (var symbol in _buffer)
-        {
-            Write(symbol);
-        }
-
-        _buffer.Clear();
+        _optionsState.CompleteOptionsScope();
+        _textWriter.Options = _optionsState.Options;
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -138,4 +65,39 @@ public partial class Template
 
     public void CompleteIfBranch() =>
         _branchState.CompleteIfBranch();
+
+    public TemplateBufferingScope BeginBufferingScope()
+    {
+        _bufferState.BeginScope();
+        return new TemplateBufferingScope(this);
+    }
+
+    public TemplateBufferingScope BeginPaddingScope(PaddingRenderOptions? paddingOptions = null, string? name = null)
+    {
+        _bufferState.BeginPaddingScope(
+            name ?? Guid.NewGuid().ToString(),
+            paddingOptions ?? DefaultPaddingOptions);
+        return new TemplateBufferingScope(this);
+    }
+
+    internal void CompleteBufferingScope() => _bufferState.CompletePaddingScope(x => ConsumeBuffer(x));
+
+    private void ConsumeBuffer(IReadOnlyCollection<ITemplateValueSymbol> bufferedSymbols)
+    {
+        var estimateBuffer = new StringBuilder();
+        foreach (var symbol in bufferedSymbols.OfType<IPaddingSymbol>())
+        {
+            if (symbol.Column is not { } column)
+            {
+                continue;
+            }
+
+            column.ObserveValueWidth(symbol.EstimateWidth(CurrentOptions.Culture, estimateBuffer));
+        }
+
+        foreach (var symbol in bufferedSymbols)
+        {
+            Write(symbol);
+        }
+    }
 }

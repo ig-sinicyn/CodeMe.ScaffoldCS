@@ -40,13 +40,13 @@ public readonly struct IfTrueTemplateString<TCondition> : IInterpolatedString
 
     public void AppendFormatted(ReadOnlySpan<char> value, int alignment) => _template.Write(value, alignment);
 
-    public void AppendFormatted<T>(T? value) => _template.Write(value);
+    public void AppendFormatted<T>(T value) => _template.Write(value);
 
-    public void AppendFormatted<T>(T? value, int alignment) => _template.Write(value, alignment);
+    public void AppendFormatted<T>(T value, int alignment) => _template.Write(value, alignment);
 
-    public void AppendFormatted<T>(T? value, int alignment, string? format) => _template.Write(value, alignment, format);
+    public void AppendFormatted<T>(T value, int alignment, string? format) => _template.Write(value, alignment, format);
 
-    public void AppendFormatted<T>(T? value, string? format) => _template.Write(value, alignment: 0, format);
+    public void AppendFormatted<T>(T value, string? format) => _template.Write(value, alignment: 0, format);
 
     public void AppendFormatted(Action<Template> callback) => _template.Write(callback);
 

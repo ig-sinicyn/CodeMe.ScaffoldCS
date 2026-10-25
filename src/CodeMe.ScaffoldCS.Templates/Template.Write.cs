@@ -11,7 +11,6 @@ namespace CodeMe.ScaffoldCS.Templates;
 public partial class Template
 {
     // TODO: add string builder support
-    private readonly List<ITemplateValueSymbol> _buffer = new();
 
     public Template SetLineHandling(CurrentLineHandlingMode lineHandling)
     {
@@ -20,9 +19,9 @@ public partial class Template
             return this;
         }
 
-        if (IsBuffered)
+        if (_bufferState.ShouldBuffer)
         {
-            _buffer.Add(new LineHandlingSymbol(lineHandling));
+            _bufferState.Append(new LineHandlingSymbol(lineHandling));
             return this;
         }
 
@@ -37,9 +36,9 @@ public partial class Template
             return this;
         }
 
-        if (IsBuffered)
+        if (_bufferState.ShouldBuffer)
         {
-            _buffer.Add(new ClearLineSymbol());
+            _bufferState.Append(new ClearLineSymbol());
             return this;
         }
 
@@ -54,9 +53,9 @@ public partial class Template
             return this;
         }
 
-        if (IsBuffered)
+        if (_bufferState.ShouldBuffer)
         {
-            _buffer.Add(new NewLineSymbol());
+            _bufferState.Append(new NewLineSymbol());
             return this;
         }
 
@@ -74,9 +73,9 @@ public partial class Template
             return this;
         }
 
-        if (IsBuffered)
+        if (_bufferState.ShouldBuffer)
         {
-            _buffer.Add(new LiteralSymbol(value));
+            _bufferState.Append(new LiteralSymbol(value));
             return this;
         }
 
@@ -91,9 +90,9 @@ public partial class Template
             return this;
         }
 
-        if (IsBuffered)
+        if (_bufferState.ShouldBuffer)
         {
-            _buffer.Add(new LiteralSymbol(value.ToArray()));
+            _bufferState.Append(new LiteralSymbol(value.ToArray()));
             return this;
         }
 
@@ -112,15 +111,15 @@ public partial class Template
             return this;
         }
 
-        if (IsBuffered)
+        if (_bufferState.ShouldBuffer)
         {
-            if (CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
+            if (_bufferState.CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
             {
-                _buffer.Add(new PaddingSymbol<ReadOnlyMemory<char>>(value, padOptions));
+                _bufferState.Append(new PaddingSymbol<ReadOnlyMemory<char>>(value, padOptions));
             }
             else
             {
-                _buffer.Add(new ValueSymbol<ReadOnlyMemory<char>>(value));
+                _bufferState.Append(new ValueSymbol<ReadOnlyMemory<char>>(value));
             }
 
             return this;
@@ -144,15 +143,15 @@ public partial class Template
             return this;
         }
 
-        if (IsBuffered)
+        if (_bufferState.ShouldBuffer)
         {
-            if (CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
+            if (_bufferState.CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
             {
-                _buffer.Add(new PaddingSymbol<ReadOnlyMemory<char>>(value, padOptions, alignment));
+                _bufferState.Append(new PaddingSymbol<ReadOnlyMemory<char>>(value, padOptions, alignment));
             }
             else
             {
-                _buffer.Add(new ValueSymbol<ReadOnlyMemory<char>>(value, alignment));
+                _bufferState.Append(new ValueSymbol<ReadOnlyMemory<char>>(value, alignment));
             }
 
             return this;
@@ -176,15 +175,15 @@ public partial class Template
             return this;
         }
 
-        if (IsBuffered)
+        if (_bufferState.ShouldBuffer)
         {
-            if (CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
+            if (_bufferState.CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
             {
-                _buffer.Add(new PaddingSymbol<ReadOnlyMemory<char>>(value.ToArray(), padOptions));
+                _bufferState.Append(new PaddingSymbol<ReadOnlyMemory<char>>(value.ToArray(), padOptions));
             }
             else
             {
-                _buffer.Add(new ValueSymbol<ReadOnlyMemory<char>>(value.ToArray()));
+                _bufferState.Append(new ValueSymbol<ReadOnlyMemory<char>>(value.ToArray()));
             }
 
             return this;
@@ -203,20 +202,21 @@ public partial class Template
 
     public Template Write(ReadOnlySpan<char> value, int alignment)
     {
+
         if (!_branchState.ShouldWrite)
         {
             return this;
         }
 
-        if (IsBuffered)
+        if (_bufferState.ShouldBuffer)
         {
-            if (CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
+            if (_bufferState.CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
             {
-                _buffer.Add(new PaddingSymbol<ReadOnlyMemory<char>>(value.ToArray(), padOptions, alignment));
+                _bufferState.Append(new PaddingSymbol<ReadOnlyMemory<char>>(value.ToArray(), padOptions, alignment));
             }
             else
             {
-                _buffer.Add(new ValueSymbol<ReadOnlyMemory<char>>(value.ToArray(), alignment));
+                _bufferState.Append(new ValueSymbol<ReadOnlyMemory<char>>(value.ToArray(), alignment));
             }
 
             return this;
@@ -225,7 +225,7 @@ public partial class Template
         if (value.IsMultiline())
         {
             using var _ = this.BeginMultilineStringScope();
-            _textWriter.Append(value);
+            _textWriter.Append(value, alignment);
             return this;
         }
 
@@ -233,11 +233,19 @@ public partial class Template
         return this;
     }
 
-    public Template Write<T>(T? value)
+    public Template Write<T>(T value)
     {
-        if (value is ITemplateControlSymbol)
+        // The render logic may change active condition branch
+        // so we call Render() even if we are inside an inactive condition branch.
+        // We do ignore value symbols here, though.
+        if (value is ITemplateSymbol && !(value is ITemplateValueSymbol))
         {
-            ((ITemplateControlSymbol)value).Render(this);
+            ((ITemplateSymbol)value).Render(this);
+            return this;
+        }
+
+        if (!_branchState.ShouldWrite)
+        {
             return this;
         }
 
@@ -253,28 +261,17 @@ public partial class Template
             return this;
         }
 
-        if (!_branchState.ShouldWrite)
-        {
-            return this;
-        }
-
         if (value is ITemplateValueSymbol)
         {
-            if (IsBuffered)
+            if (_bufferState.ShouldBuffer)
             {
-                _buffer.Add((ITemplateValueSymbol)value);
+                _bufferState.Append((ITemplateValueSymbol)value);
             }
             else
             {
                 ((ITemplateValueSymbol)value).Render(this);
             }
 
-            return this;
-        }
-
-        if (value is ITemplateSymbol)
-        {
-            ((ITemplateSymbol)value).Render(this);
             return this;
         }
 
@@ -292,15 +289,15 @@ public partial class Template
             return this;
         }
 
-        if (IsBuffered)
+        if (_bufferState.ShouldBuffer)
         {
-            if (CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
+            if (_bufferState.CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
             {
-                _buffer.Add(new PaddingSymbol<T?>(value, padOptions));
+                _bufferState.Append(new PaddingSymbol<T>(value, padOptions));
             }
             else
             {
-                _buffer.Add(new ValueSymbol<T?>(value));
+                _bufferState.Append(new ValueSymbol<T>(value));
             }
 
             return this;
@@ -310,23 +307,15 @@ public partial class Template
         return this;
     }
 
-    public Template Write<T>(T? value, int alignment, string? format = null)
+    public Template Write<T>(T value, int alignment, string? format = null)
     {
-        if (value is ITemplateControlSymbol)
-        {
-            ((ITemplateControlSymbol)value).Render(this);
-            return this;
-        }
 
-        if (value is string s)
+        // The render logic may change active condition branch
+        // so we call Render() even if we are inside an inactive condition branch.
+        // We do ignore value symbols here, though.
+        if (value is ITemplateSymbol && !(value is ITemplateValueSymbol))
         {
-            Write(s, alignment);
-            return this;
-        }
-
-        if (value is ReadOnlyMemory<char> c)
-        {
-            Write(c, alignment);
+            ((ITemplateSymbol)value).Render(this);
             return this;
         }
 
@@ -335,23 +324,29 @@ public partial class Template
             return this;
         }
 
+        if (value is string s)
+        {
+            Write(s, alignment, format);
+            return this;
+        }
+
+        if (value is ReadOnlyMemory<char> c)
+        {
+            Write(c, alignment, format);
+            return this;
+        }
+
         if (value is ITemplateValueSymbol)
         {
-            if (IsBuffered)
+            if (_bufferState.ShouldBuffer)
             {
-                _buffer.Add((ITemplateValueSymbol)value);
+                _bufferState.Append((ITemplateValueSymbol)value);
             }
             else
             {
                 ((ITemplateValueSymbol)value).Render(this);
             }
 
-            return this;
-        }
-
-        if (value is ITemplateSymbol)
-        {
-            ((ITemplateSymbol)value).Render(this);
             return this;
         }
 
@@ -364,32 +359,30 @@ public partial class Template
         {
             ((IEnumerable)value)
                 .Cast<object>()
-                .Render(
-                    DefaultCollectionRenderOptions with
-                    {
-                        Alignment = alignment,
-                        Format = format
-                    })
+                .Render(DefaultCollectionRenderOptions with
+                {
+                    Alignment = alignment,
+                    Format = format
+                })
                 .Render(this);
             return this;
         }
 
-        if (IsBuffered)
+        if (_bufferState.ShouldBuffer)
         {
-            if (CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
+            if (_bufferState.CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
             {
-                _buffer.Add(new PaddingSymbol<T?>(value, padOptions, alignment, format));
+                _bufferState.Append(new PaddingSymbol<T>(value, padOptions, alignment, format));
             }
             else
             {
-                _buffer.Add(new ValueSymbol<T?>(value, alignment, format));
+                _bufferState.Append(new ValueSymbol<T>(value, alignment, format));
             }
 
             return this;
         }
 
         _textWriter.Append(value, alignment, format);
-
         return this;
     }
 

@@ -17,6 +17,13 @@ public class BufferState
 
     public bool ShouldBuffer => _paddingStack.Count > 0;
 
+    public void Clear()
+    {
+        _paddingColumns.Clear();
+        _paddingStack.Clear();
+        _bufferedSymbols.Clear();
+    }
+
     public void BeginScope()
     {
         _paddingStack.Push(CurrentPadding);

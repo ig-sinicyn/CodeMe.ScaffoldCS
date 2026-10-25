@@ -102,7 +102,7 @@ internal sealed class TemplateTextWriter : IDisposable
         return this;
     }
 
-    public TemplateTextWriter Append<T>(T? value)
+    public TemplateTextWriter Append<T>(T value)
     {
         if (value is null)
         {
@@ -126,7 +126,7 @@ internal sealed class TemplateTextWriter : IDisposable
         return this;
     }
 
-    public TemplateTextWriter Append<T>(T? value, int alignment, string? format)
+    public TemplateTextWriter Append<T>(T value, int alignment, string? format)
     {
         if (value is null)
         {

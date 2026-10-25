@@ -23,8 +23,6 @@ public sealed partial class Template : IDisposable
         DefaultPaddingOptions = PaddingRenderOptions.Default;
     }
 
-    public bool ShouldWrite => _branchState.ShouldWrite;
-
     public bool ValidateOnClose { get; set; }
 
     public CollectionRenderOptions DefaultCollectionRenderOptions { get; set; }
@@ -58,7 +56,9 @@ public sealed partial class Template : IDisposable
         }
 
         _textWriter.Dispose();
-        _paddings.Clear();
+        _optionsState.Clear();
+        _branchState.Clear();
+        _bufferState.Clear();
     }
 
     public void Close() => Dispose();
