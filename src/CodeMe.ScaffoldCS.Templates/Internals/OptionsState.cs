@@ -9,19 +9,20 @@ public class OptionsState(TemplateTextWriterOptions defaultOptions)
 
     public bool IsEmpty => _optionsStack.Count == 0;
 
-    public TemplateTextWriterOptions Options { get; set; } = defaultOptions;
+    public TemplateTextWriterOptions CurrentOptions { get; set; } = defaultOptions;
 
     public void Clear()
     {
         _optionsStack.Clear();
-        Options = _defaultOptions;
+        CurrentOptions = _defaultOptions;
     }
 
-    public void BeginOptionsScope(TemplateTextWriterOptions options)
+    public TemplateTextWriterOptions BeginOptionsScope(TemplateTextWriterOptions options)
     {
-        _optionsStack.Push(options);
-        Options = options;
+        _optionsStack.Push(CurrentOptions);
+        CurrentOptions = options;
+        return options;
     }
 
-    public void CompleteOptionsScope() => Options = _optionsStack.Pop();
+    public TemplateTextWriterOptions CompleteOptionsScope() => CurrentOptions = _optionsStack.Pop();
 }

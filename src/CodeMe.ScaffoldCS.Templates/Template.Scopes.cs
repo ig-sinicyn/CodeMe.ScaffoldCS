@@ -11,10 +11,10 @@ public partial class Template
 {
     public TemplateTextWriterOptions CurrentOptions
     {
-        get => _optionsState.Options;
+        get => _optionsState.CurrentOptions;
         set
         {
-            _optionsState.Options = value;
+            _optionsState.CurrentOptions = value;
             _textWriter.Options = value;
         }
     }
@@ -33,8 +33,7 @@ public partial class Template
             return new TemplateOptionsScope(this);
         }
 
-        _optionsState.BeginOptionsScope(_textWriter.CaptureOptions(indentation));
-        _textWriter.Options = _optionsState.Options;
+        _textWriter.Options = _optionsState.BeginOptionsScope(_textWriter.CaptureOptions(indentation));
         return new TemplateOptionsScope(this);
     }
 
@@ -46,8 +45,7 @@ public partial class Template
             return;
         }
 
-        _optionsState.CompleteOptionsScope();
-        _textWriter.Options = _optionsState.Options;
+        _textWriter.Options = _optionsState.CompleteOptionsScope();
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]

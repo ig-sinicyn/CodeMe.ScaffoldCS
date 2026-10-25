@@ -136,6 +136,34 @@ public class TemplateTests
     }
 
     [Fact]
+    public void TestScenario_EmptyProperties2_ShouldBeExpected()
+    {
+        // Arrange
+        var dto = _testDto with
+        {
+            Properties = []
+        };
+        var writer = CreateTemplate();
+        using var _ = writer.BeginAmbientScope();
+
+        // Act
+        writer.Write(
+            $$"""
+            {
+                {{dto.Properties.RenderEmptyLineSeparated(RenderProperty)}}
+            }
+            """);
+
+        // Assert
+        // language=c#
+        writer.ShouldBe(
+            """
+            {
+            }
+            """);
+    }
+
+    [Fact]
     public void TestScenario_IfComment_ShouldBeExpected()
     {
         // Arrange
@@ -390,6 +418,51 @@ public class TemplateTests
             {RL}
             {RL}
             {RL}
+            """);
+
+        // Assert
+        writer.ShouldBe("");
+    }
+
+    [Fact]
+    public void Collection_ShouldBeExpected()
+    {
+        // Arrange
+        var data = new[] { 1, 2, 3 };
+        var writer = CreateTemplate();
+        using var _ = writer.BeginAmbientScope();
+
+        // Act
+        writer.Write(
+            $"""
+            * {data.Render()}           
+            """);
+
+        // Assert
+        writer.ShouldBe(
+            """
+            * 1
+            * 2
+            * 3
+            """);
+    }
+
+    [Fact]
+    public void CollectionEmpty_ShouldBeExpected()
+    {
+        // Arrange
+        var data = Array.Empty<int>();
+        var writer = CreateTemplate();
+        using var _ = writer.BeginAmbientScope();
+        var collectionOptions = CollectionRenderOptions.Multiline with
+        {
+            EmptyValue = RL
+        };
+
+        // Act
+        writer.Write(
+            $"""
+            * {data.Render(collectionOptions)}           
             """);
 
         // Assert
