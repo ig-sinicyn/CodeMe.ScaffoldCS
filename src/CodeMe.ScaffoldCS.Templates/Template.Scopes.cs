@@ -70,7 +70,7 @@ public partial class Template
         return new TemplateBufferingScope(this);
     }
 
-    public TemplateBufferingScope BeginPaddingScope(PaddingRenderOptions? paddingOptions = null, string? name = null)
+    public TemplateBufferingScope BeginPaddingScope(string? name = null, PaddingRenderOptions? paddingOptions = null)
     {
         _bufferState.BeginPaddingScope(
             name ?? Guid.NewGuid().ToString(),

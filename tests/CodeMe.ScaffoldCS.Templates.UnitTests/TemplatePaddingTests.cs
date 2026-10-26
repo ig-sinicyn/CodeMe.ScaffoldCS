@@ -8,7 +8,7 @@ using static SymbolsCS;
 
 public class TemplatePaddingTests
 {
-    private static readonly Class _testDto = new(
+    private static readonly Dto _testDto = new(
         "test_models",
         "test_dto",
         "Test details",
@@ -34,6 +34,8 @@ public class TemplatePaddingTests
             CREATE TABLE {dto.Namespace}.{dto.Name} (
                 {dto.Properties.RenderPaddedCommaSeparated(RenderProperty)}
             );
+            
+            {t => RenderComments(t, dto)}
             """);
 
         // Assert
@@ -47,6 +49,10 @@ public class TemplatePaddingTests
                 created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
                 updated_at TIMESTAMPTZ  NULL
             );
+            
+            COMMENT ON TABLE  test_models.test_dto      IS 'Test details';
+            COMMENT ON COLUMN test_models.test_dto.id   IS 'Identifier';
+            COMMENT ON COLUMN test_models.test_dto.name IS 'Dto name details';
             """);
     }
 
@@ -54,6 +60,23 @@ public class TemplatePaddingTests
         x.Name == "id"
             ? (TemplateString)$"{x.Name} {x.Type} GENERATED ALWAYS AS IDENTITY PRIMARY KEY"
             : $"{x.Name} {x.Type} {IIF(x.IsNullable, "NULL", "NOT NULL")}{IIF(x.Default, $" DEFAULT {x.Default}")}";
+
+    private static void RenderComments(Template template, Dto dto)
+    {
+        using var _ = template.BeginPaddingScope("comments");
+
+        if (Conditions.HasValue(dto.Comment))
+        {
+            template.Write($"COMMENT ON {"TABLE"} {$"{dto.Namespace}.{dto.Name}"} IS {$"'{dto.Comment}';"}");
+        }
+
+        var columnComments = dto.Properties
+            .WhereHasValue(x => x.Comment)
+            .RenderPadded(
+                x => $"COMMENT ON {"COLUMN"} {$"{dto.Namespace}.{dto.Name}.{x.Name}"} IS {$"'{x.Comment}';"}",
+                paddingGroupName: "comments");
+        template.WriteLine().Write(columnComments);
+    }
 
     private static Template CreateTemplate()
     {

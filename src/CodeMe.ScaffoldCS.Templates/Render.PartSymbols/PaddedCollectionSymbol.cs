@@ -34,7 +34,7 @@ public readonly struct PaddedCollectionSymbol<T> : ITemplateSymbol
 
     public void Render(Template template)
     {
-        using var _ = template.BeginPaddingScope(_paddingOptions, _paddingGroupName);
+        using var _ = template.BeginPaddingScope(_paddingGroupName, _paddingOptions);
         _wrappedSymbol.Render(template);
     }
 }

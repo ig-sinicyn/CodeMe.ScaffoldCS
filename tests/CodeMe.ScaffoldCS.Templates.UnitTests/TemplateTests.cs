@@ -8,7 +8,7 @@ using static SymbolsCS;
 
 public class TemplateTests
 {
-    private static readonly Class _testDto = new(
+    private static readonly Dto _testDto = new(
         "TestModels",
         "TestDto",
         "Test details",

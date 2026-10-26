@@ -64,21 +64,21 @@ public static class Symbols
         [InterpolatedStringHandlerArgument(nameof(condition))] IfFalseTemplateString<T> falseValue) =>
         new(Conditions.HasValue(condition), trueValue, falseValue);
 
-    public static PaddingSymbol<T> PadLeft<T>(T value, int minLength = 0) => 
+    public static PaddingSymbol<T> PadLeft<T>(T value, int minLength = 0) =>
         new(value, PaddingRenderOptions.LeftPadding, minLength);
 
-    public static PaddingSymbol<T> PadLeft<T>(T value, char paddingChar = ' ', int minLength = 0) =>
+    public static PaddingSymbol<T> PadLeft<T>(T value, char paddingChar, int minLength = 0) =>
         new(value, new PaddingRenderOptions(PaddingMode.Left, paddingChar, minLength));
 
     public static PaddingSymbol<T> PadRight<T>(T value, int minLength = 0) =>
         new(value, PaddingRenderOptions.RightPadding, minLength);
 
-    public static PaddingSymbol<T> PadRight<T>(T value, char paddingChar = ' ', int minLength = 0) =>
+    public static PaddingSymbol<T> PadRight<T>(T value, char paddingChar, int minLength = 0) =>
         new(value, new PaddingRenderOptions(PaddingMode.Right, paddingChar, minLength));
 
     public static PaddingSymbol<T> PadCenter<T>(T value, int minLength = 0) =>
         new(value, PaddingRenderOptions.CenterPadding, minLength);
 
-    public static PaddingSymbol<T> PadCenter<T>(T value, char paddingChar = ' ', int minLength = 0) =>
+    public static PaddingSymbol<T> PadCenter<T>(T value, char paddingChar, int minLength = 0) =>
         new(value, new PaddingRenderOptions(PaddingMode.Center, paddingChar, minLength));
 }

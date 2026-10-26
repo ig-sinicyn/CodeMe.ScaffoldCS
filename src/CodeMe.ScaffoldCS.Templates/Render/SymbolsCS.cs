@@ -63,18 +63,18 @@ public static class SymbolsCS
     public static PaddingSymbol<T> LPAD<T>(T value, int minLength = 0) =>
         Symbols.PadLeft(value, minLength);
 
-    public static PaddingSymbol<T> LPAD<T>(T value, char paddingChar = ' ', int minLength = 0) =>
+    public static PaddingSymbol<T> LPAD<T>(T value, char paddingChar, int minLength = 0) =>
         Symbols.PadLeft(value, paddingChar, minLength);
 
     public static PaddingSymbol<T> RPAD<T>(T value, int minLength = 0) =>
         Symbols.PadRight(value, minLength);
 
-    public static PaddingSymbol<T> RPAD<T>(T value, char paddingChar = ' ', int minLength = 0) =>
+    public static PaddingSymbol<T> RPAD<T>(T value, char paddingChar, int minLength = 0) =>
         Symbols.PadRight(value, paddingChar, minLength);
 
     public static PaddingSymbol<T> CENTER<T>(T value, int minLength = 0) =>
         Symbols.PadCenter(value, minLength);
 
-    public static PaddingSymbol<T> CENTER<T>(T value, char paddingChar = ' ', int minLength = 0) =>
+    public static PaddingSymbol<T> CENTER<T>(T value, char paddingChar, int minLength = 0) =>
         Symbols.PadCenter(value, paddingChar, minLength);
 }
