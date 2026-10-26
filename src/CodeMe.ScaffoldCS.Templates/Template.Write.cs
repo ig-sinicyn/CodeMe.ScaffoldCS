@@ -113,15 +113,7 @@ public partial class Template
 
         if (_bufferState.ShouldBuffer)
         {
-            if (_bufferState.CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
-            {
-                _bufferState.Append(new PaddingSymbol<ReadOnlyMemory<char>>(value, padOptions));
-            }
-            else
-            {
-                _bufferState.Append(new ValueSymbol<ReadOnlyMemory<char>>(value));
-            }
-
+            _bufferState.Append(ToValueSymbol(value));
             return this;
         }
 
@@ -145,15 +137,7 @@ public partial class Template
 
         if (_bufferState.ShouldBuffer)
         {
-            if (_bufferState.CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
-            {
-                _bufferState.Append(new PaddingSymbol<ReadOnlyMemory<char>>(value, padOptions, alignment));
-            }
-            else
-            {
-                _bufferState.Append(new ValueSymbol<ReadOnlyMemory<char>>(value, alignment));
-            }
-
+            _bufferState.Append(ToValueSymbol(value, alignment));
             return this;
         }
 
@@ -177,15 +161,7 @@ public partial class Template
 
         if (_bufferState.ShouldBuffer)
         {
-            if (_bufferState.CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
-            {
-                _bufferState.Append(new PaddingSymbol<ReadOnlyMemory<char>>(value.ToArray(), padOptions));
-            }
-            else
-            {
-                _bufferState.Append(new ValueSymbol<ReadOnlyMemory<char>>(value.ToArray()));
-            }
-
+            _bufferState.Append(ToValueSymbol((ReadOnlyMemory<char>)value.ToArray()));
             return this;
         }
 
@@ -202,7 +178,6 @@ public partial class Template
 
     public Template Write(ReadOnlySpan<char> value, int alignment)
     {
-
         if (!_branchState.ShouldWrite)
         {
             return this;
@@ -210,15 +185,7 @@ public partial class Template
 
         if (_bufferState.ShouldBuffer)
         {
-            if (_bufferState.CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
-            {
-                _bufferState.Append(new PaddingSymbol<ReadOnlyMemory<char>>(value.ToArray(), padOptions, alignment));
-            }
-            else
-            {
-                _bufferState.Append(new ValueSymbol<ReadOnlyMemory<char>>(value.ToArray(), alignment));
-            }
-
+            _bufferState.Append(ToValueSymbol((ReadOnlyMemory<char>)value.ToArray(), alignment));
             return this;
         }
 
@@ -291,15 +258,7 @@ public partial class Template
 
         if (_bufferState.ShouldBuffer)
         {
-            if (_bufferState.CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
-            {
-                _bufferState.Append(new PaddingSymbol<T>(value, padOptions));
-            }
-            else
-            {
-                _bufferState.Append(new ValueSymbol<T>(value));
-            }
-
+            _bufferState.Append(ToValueSymbol(value));
             return this;
         }
 
@@ -309,7 +268,6 @@ public partial class Template
 
     public Template Write<T>(T value, int alignment, string? format = null)
     {
-
         // The render logic may change active condition branch
         // so we call Render() even if we are inside an inactive condition branch.
         // We do ignore value symbols here, though.
@@ -340,7 +298,7 @@ public partial class Template
         {
             if (_bufferState.ShouldBuffer)
             {
-                _bufferState.Append((ITemplateValueSymbol)value);
+                _bufferState.Append(EnsurePaddingColumn((ITemplateValueSymbol)value));
             }
             else
             {
@@ -359,26 +317,19 @@ public partial class Template
         {
             ((IEnumerable)value)
                 .Cast<object>()
-                .Render(DefaultCollectionRenderOptions with
-                {
-                    Alignment = alignment,
-                    Format = format
-                })
+                .Render(
+                    DefaultCollectionRenderOptions with
+                    {
+                        Alignment = alignment,
+                        Format = format
+                    })
                 .Render(this);
             return this;
         }
 
         if (_bufferState.ShouldBuffer)
         {
-            if (_bufferState.CurrentPadding is { Options: { Padding: not PaddingMode.None } padOptions })
-            {
-                _bufferState.Append(new PaddingSymbol<T>(value, padOptions, alignment, format));
-            }
-            else
-            {
-                _bufferState.Append(new ValueSymbol<T>(value, alignment, format));
-            }
-
+            _bufferState.Append(ToValueSymbol(value, alignment));
             return this;
         }
 
@@ -395,4 +346,28 @@ public partial class Template
     public Template Write(IEnumerable values) => Write(values.Cast<object>().Render(DefaultCollectionRenderOptions));
 
     public Template Write<T>(IEnumerable<T> values) => Write(values.Render(DefaultCollectionRenderOptions));
+
+    private ITemplateValueSymbol ToValueSymbol<T>(T value, int alignment = 0)
+    {
+        if (_bufferState.CurrentPadding is { Options.Padding: not PaddingMode.None } padding)
+        {
+            return new PaddingSymbol<T>(value, padding.Options, alignment)
+            {
+                Column = padding.GetNextColumn()
+            };
+        }
+
+        return new ValueSymbol<T>(value, alignment);
+    }
+
+    private ITemplateValueSymbol EnsurePaddingColumn(ITemplateValueSymbol value)
+    {
+        if (value is IPaddingSymbol paddingSymbol
+            && _bufferState.CurrentPadding is { Options.Padding: not PaddingMode.None } padding)
+        {
+            paddingSymbol.Column ??= padding.GetNextColumn();
+        }
+
+        return value;
+    }
 }

@@ -6,6 +6,8 @@ namespace CodeMe.ScaffoldCS.Templates;
 [InterpolatedStringHandler]
 public readonly struct TemplateString : IInterpolatedString
 {
+    public static TemplateString operator +(TemplateString lhs, TemplateString rhs) => lhs;
+
     private readonly Template _template;
 
     public TemplateString(int literalLength, int formattedCount)

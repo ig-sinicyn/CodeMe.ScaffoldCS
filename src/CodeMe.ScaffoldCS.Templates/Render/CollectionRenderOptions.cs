@@ -20,5 +20,9 @@ public record CollectionRenderOptions(
         Separator: ", ",
         EmptyValue: Symbols.RemoveWhitespaceLine);
 
+    public static readonly CollectionRenderOptions MultilineCommaSeparated = new(
+        Separator: "," + Environment.NewLine,
+        EmptyValue: Symbols.RemoveWhitespaceLine);
+
     public static readonly CollectionRenderOptions Default = Multiline;
 }

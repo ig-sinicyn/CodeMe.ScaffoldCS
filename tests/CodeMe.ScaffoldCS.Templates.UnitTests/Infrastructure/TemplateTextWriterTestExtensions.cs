@@ -65,7 +65,7 @@ internal static class TemplateTextWriterTestExtensions
 
     public static TemplateTextWriter ShouldBe(
         this TemplateTextWriter templateWriter,
-        string rendered,
+        string expected,
         string? beforeClose = null)
     {
         var testAccessor = templateWriter.GetTestAccessor();
@@ -75,7 +75,8 @@ internal static class TemplateTextWriterTestExtensions
         templateWriter.Close();
 
         using var _ = new AssertionScope();
-        output.ToString().Should().Be(rendered);
+        var rendered = output.ToString();
+        rendered.Should().Be(expected);
         if (beforeClose != null)
         {
             capturedBeforeClose.Should().Be(capturedBeforeClose);

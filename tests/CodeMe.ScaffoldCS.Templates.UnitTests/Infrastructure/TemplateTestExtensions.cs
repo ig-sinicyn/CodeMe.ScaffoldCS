@@ -13,15 +13,15 @@ internal static class TemplateTestExtensions
 
     public static Template ShouldBe(
         this Template writer,
-        string rendered)
+        string expected)
     {
         var testAccessor = writer.GetTestAccessor();
         var output = (StringWriter)testAccessor.Output;
         writer.Close();
 
         using var _ = new AssertionScope();
-        var current = output.ToString();
-        current.Should().Be(rendered);
+        var rendered = output.ToString();
+        rendered.Should().Be(expected);
 
         return writer;
     }

@@ -9,6 +9,7 @@ using static SymbolsCS;
 public class TemplateTests
 {
     private static readonly Class _testDto = new(
+        "TestModels",
         "TestDto",
         "Test details",
         [
@@ -34,7 +35,7 @@ public class TemplateTests
             }}
             using System;
             
-            namespace TestModels;
+            namespace {{dto.Namespace}};
 
             {{IF(dto.Comment)}}
             /// <summary>
@@ -107,7 +108,7 @@ public class TemplateTests
             $$"""
             using System;
             
-            namespace TestModels;
+            namespace {{dto.Namespace}};
             
             {{IF(dto.Comment)}}/// <summary>
             /// {{dto.Comment}}.
@@ -180,7 +181,7 @@ public class TemplateTests
             $$"""
             using System;
             
-            namespace TestModels;
+            namespace {{dto.Namespace}};
             
             {{IF(dto.Comment)}}/// <summary>
             /// {{dto.Comment}}.
@@ -221,7 +222,7 @@ public class TemplateTests
             $$"""
             using System;
             
-            namespace TestModels;
+            namespace {{dto.Namespace}};
             
             {{IF(dto.Comment)}}/// <summary>
             /// {{dto.Comment}}.

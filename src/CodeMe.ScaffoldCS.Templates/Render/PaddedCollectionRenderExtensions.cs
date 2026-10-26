@@ -14,7 +14,7 @@ public static class PaddedCollectionRenderExtensions
             callback: null,
             paddingOptions: paddingOptions,
             paddingGroupName: paddingGroupName,
-            collectionOptions: collectionOptions);
+            collectionOptions: collectionOptions ?? CollectionRenderOptions.Multiline);
 
     public static PaddedCollectionSymbol<T> RenderPadded<T>(
         this IEnumerable<T> value,
@@ -27,7 +27,7 @@ public static class PaddedCollectionRenderExtensions
             callback: callback,
             paddingOptions: paddingOptions,
             paddingGroupName: paddingGroupName,
-            collectionOptions: collectionOptions);
+            collectionOptions: collectionOptions ?? CollectionRenderOptions.Multiline);
 
     public static PaddedCollectionSymbol<T> RenderPadded<T>(
         this IEnumerable<T> value,
@@ -40,5 +40,28 @@ public static class PaddedCollectionRenderExtensions
             callback: callback,
             paddingOptions: paddingOptions,
             paddingGroupName: paddingGroupName,
-            collectionOptions: collectionOptions);
+            collectionOptions: collectionOptions ?? CollectionRenderOptions.Multiline);
+
+    public static PaddedCollectionSymbol<T> RenderPaddedCommaSeparated<T>(
+        this IEnumerable<T> value,
+        PaddingRenderOptions? paddingOptions = null,
+        string? paddingGroupName = null) =>
+        new(
+            source: value,
+            callback: null,
+            paddingOptions: paddingOptions,
+            paddingGroupName: paddingGroupName,
+            collectionOptions: CollectionRenderOptions.MultilineCommaSeparated);
+
+    public static PaddedCollectionSymbol<T> RenderPaddedCommaSeparated<T>(
+        this IEnumerable<T> value,
+        Func<T, TemplateString> callback,
+        PaddingRenderOptions? paddingOptions = null,
+        string? paddingGroupName = null) =>
+        new(
+            source: value,
+            callback: callback,
+            paddingOptions: paddingOptions,
+            paddingGroupName: paddingGroupName,
+            collectionOptions: CollectionRenderOptions.MultilineCommaSeparated);
 }
