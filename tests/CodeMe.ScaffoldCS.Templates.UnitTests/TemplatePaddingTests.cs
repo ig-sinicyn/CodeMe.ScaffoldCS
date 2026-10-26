@@ -24,11 +24,11 @@ public class TemplatePaddingTests
     {
         // Arrange
         var dto = _testDto;
-        var writer = CreateTemplate();
-        using var _ = writer.BeginAmbientScope();
+        var template = CreateTemplate();
+        using var _ = template.BeginAmbientScope();
 
         // Act
-        writer.Write(
+        template.Write(
             $"""
             {CENTER($" {dto.Name} ", '-', 50)}
             CREATE TABLE {dto.Namespace}.{dto.Name} (
@@ -40,7 +40,7 @@ public class TemplatePaddingTests
 
         // Assert
         // language=sql
-        writer.ShouldBe(
+        template.ShouldBe(
             """
             --------------- test_dto ---------------
             CREATE TABLE test_models.test_dto (
@@ -67,7 +67,9 @@ public class TemplatePaddingTests
 
         if (Conditions.HasValue(dto.Comment))
         {
-            template.Write($"COMMENT ON {"TABLE"} {$"{dto.Namespace}.{dto.Name}"} IS {$"'{dto.Comment}';"}");
+            template
+                .Write($"COMMENT ON {"TABLE"} {$"{dto.Namespace}.{dto.Name}"} IS {$"'{dto.Comment}';"}")
+                .WriteLine();
         }
 
         var columnComments = dto.Properties
@@ -75,7 +77,8 @@ public class TemplatePaddingTests
             .RenderPadded(
                 x => $"COMMENT ON {"COLUMN"} {$"{dto.Namespace}.{dto.Name}.{x.Name}"} IS {$"'{x.Comment}';"}",
                 paddingGroupName: "comments");
-        template.WriteLine().Write(columnComments);
+
+        template.Write(columnComments);
     }
 
     private static Template CreateTemplate()
