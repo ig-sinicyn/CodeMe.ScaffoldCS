@@ -66,7 +66,7 @@ public partial class Template
 
     public TemplateBufferingScope BeginBufferingScope()
     {
-        _bufferState.BeginScope();
+        _bufferState.BeginNoPaddingScope();
         return new TemplateBufferingScope(this);
     }
 

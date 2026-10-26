@@ -3,90 +3,105 @@ using CodeMe.ScaffoldCS.Templates.Internals;
 
 namespace CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
 
-public class PaddingSymbol<T>(T value, PaddingRenderOptions options, int alignment = 0, string? format = null)
-    : IPaddingSymbol
+public class PaddingSymbol<T> : IPaddingSymbol
 {
-    private readonly PaddingMode _autoMode = typeof(T) switch
-    {
-        var x when x == typeof(string) => PaddingMode.Left,
-        var x when x == typeof(ReadOnlyMemory<char>) => PaddingMode.Left,
-        var x when x == typeof(StringBuilder) => PaddingMode.Left,
-        var x when x.IsAssignableTo(typeof(ITemplateSymbol)) => PaddingMode.None,
-        var x when x.IsAssignableTo(typeof(IInterpolatedString)) => PaddingMode.None,
-        _ => PaddingMode.Right
-    };
+    private readonly T _value;
+    private readonly string? _format;
+    private readonly PaddingMode _padding;
+    private readonly char _paddingChar;
+    private readonly int _minLength;
 
-    private int? _estimatedWidth;
+    private int? _actualWidth;
+
+    public PaddingSymbol(T value, PaddingRenderOptions options, int alignment = 0, string? format = null)
+    {
+        _value = value;
+        _format = format;
+        _padding = options.Padding == PaddingMode.Auto
+            ? typeof(T) switch
+            {
+                _ when alignment < 0 => PaddingMode.Left,
+                _ when alignment > 0 => PaddingMode.Right,
+                var x when x == typeof(string) => PaddingMode.Left,
+                var x when x == typeof(ReadOnlyMemory<char>) => PaddingMode.Left,
+                var x when x == typeof(StringBuilder) => PaddingMode.Left,
+                var x when x.IsAssignableTo(typeof(ITemplateSymbol)) => PaddingMode.None,
+                var x when x.IsAssignableTo(typeof(IInterpolatedString)) => PaddingMode.None,
+                _ => PaddingMode.Right
+            }
+            : options.Padding;
+        _paddingChar = options.PaddingChar;
+        _minLength = Math.Max(Math.Abs(alignment), options.MinLength);
+    }
 
     public PaddingColumn? Column { get; set; }
 
     public void Render(Template template)
     {
-        var actualWidth = _estimatedWidth ?? EstimateWidth(template.CurrentOptions.Culture);
-        var desiredWidth = Column?.Width ?? actualWidth;
+        var padWidth = Math.Max(_minLength, Column?.Width ?? 0);
+        var actual = GetActualWidth(template.CurrentOptions.Culture);
 
         // TODO: multiline scope
-        RenderPadding(template, GetPrefixWidth(desiredWidth, actualWidth));
+        RenderPadding(template, GetPrefixWidth(padWidth, actual));
         RenderCore(template);
-        RenderPadding(template, GetSuffixWidth(desiredWidth, actualWidth));
+        RenderPadding(template, GetSuffixWidth(padWidth, actual));
     }
+
+    private int GetPrefixWidth(int padWidth, int actual) => _padding switch
+    {
+        PaddingMode.None => 0,
+        PaddingMode.Auto => 0,
+        PaddingMode.Left => 0,
+        PaddingMode.Right => Math.Max(0, padWidth - actual),
+        PaddingMode.Center => Math.Max(0, padWidth / 2 - actual),
+        _ => throw new InvalidOperationException($"Unknown padding value {_padding}")
+    };
+
+    private int GetSuffixWidth(int padWidth, int actual) => _padding switch
+    {
+        PaddingMode.None => 0,
+        PaddingMode.Auto => 0,
+        PaddingMode.Left => Math.Max(0, padWidth - actual),
+        PaddingMode.Right => 0,
+        PaddingMode.Center => Math.Max(0, (padWidth + 1) / 2 - actual),
+        _ => throw new InvalidOperationException($"Unknown padding value {_padding}")
+    };
 
     private void RenderPadding(Template template, int paddingWidth)
     {
         if (paddingWidth > 0)
         {
             Span<char> span = stackalloc char[paddingWidth];
-            span.Fill(options.PaddingChar);
+            span.Fill(_paddingChar);
             template.WriteLiteral(span);
         }
     }
 
     private void RenderCore(Template template)
     {
-        var hasFormat = alignment != 0 || format != null;
-        if (hasFormat)
+        if (_format != null)
         {
-            template.Write(value, alignment, format);
+            template.Write(_value, 0, _format);
         }
         else
         {
-            template.Write(value);
+            template.Write(_value);
         }
     }
 
-    private int GetPrefixWidth(int desired, int actual)
-    {
-        var resolvedPadding = options.Padding == PaddingMode.Auto ? _autoMode : options.Padding;
-        return resolvedPadding switch
-        {
-            PaddingMode.None => 0,
-            PaddingMode.Auto => 0,
-            PaddingMode.Left => 0,
-            PaddingMode.Right => Math.Max(0, desired - actual),
-            PaddingMode.Center => Math.Max(0, desired / 2 - actual),
-            _ => throw new ArgumentOutOfRangeException(nameof(options.Padding), options.Padding, null)
-        };
-    }
+    public int EstimateWidth(IFormatProvider? formatProvider, StringBuilder? buffer = null) =>
+        Math.Max(_minLength, GetActualWidth(formatProvider, buffer));
 
-    private int GetSuffixWidth(int desired, int actual)
+    public int GetActualWidth(IFormatProvider? formatProvider, StringBuilder? buffer = null)
     {
-        var resolvedPadding = options.Padding == PaddingMode.Auto ? _autoMode : options.Padding;
-        return resolvedPadding switch
+        if (_actualWidth is { } width)
         {
-            PaddingMode.None => 0,
-            PaddingMode.Auto => 0,
-            PaddingMode.Left => Math.Max(0, desired - actual),
-            PaddingMode.Right => 0,
-            PaddingMode.Center => Math.Max(0, (desired + 1) / 2 - actual),
-            _ => throw new ArgumentOutOfRangeException(nameof(options.Padding), options.Padding, null)
-        };
-    }
+            return width;
+        }
 
-    public int EstimateWidth(IFormatProvider? formatProvider, StringBuilder? buffer = null)
-    {
-        var resolvedPadding = options.Padding == PaddingMode.Auto ? _autoMode : options.Padding;
-        if (resolvedPadding == PaddingMode.None)
+        if (_padding == PaddingMode.None)
         {
+            _actualWidth = 0;
             return 0;
         }
 
@@ -94,11 +109,10 @@ public class PaddingSymbol<T>(T value, PaddingRenderOptions options, int alignme
 
         var oldLength = buffer.Length;
         new StringBuilder.AppendInterpolatedStringHandler(0, 0, buffer, formatProvider)
-            .AppendFormatted(value, format);
+            .AppendFormatted(_value, _format);
 
-        var delta = buffer.Length - oldLength;
-        var result = Math.Max(options.MinLength, delta);
-        _estimatedWidth = result;
+        var result = buffer.Length - oldLength;
+        _actualWidth = result;
         return result;
     }
 }

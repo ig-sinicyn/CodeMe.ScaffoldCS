@@ -24,7 +24,7 @@ public class BufferState
         _bufferedSymbols.Clear();
     }
 
-    public void BeginScope()
+    public void BeginNoPaddingScope()
     {
         _paddingStack.Push(CurrentPadding);
         CurrentPadding = null;

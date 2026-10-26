@@ -8,4 +8,6 @@ public record PaddingRenderOptions(
     int MinLength = 0)
 {
     public static readonly PaddingRenderOptions Default = new();
+
+    public static readonly PaddingRenderOptions NoPadding = new(PaddingMode.None);
 }

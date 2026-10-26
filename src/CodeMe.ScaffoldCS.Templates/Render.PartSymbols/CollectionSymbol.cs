@@ -2,58 +2,36 @@
 
 namespace CodeMe.ScaffoldCS.Templates.Render.PartSymbols;
 
-public readonly struct CollectionSymbol<T>(
-    IEnumerable<T> source,
-    Func<T, TemplateString>? callback,
-    CollectionRenderOptions options,
-    PaddingRenderOptions? paddingOptions = null,
-    string? paddingGroupName = null) : ITemplateSymbol
+public readonly struct CollectionSymbol<T> : ITemplateSymbol
 {
+    private readonly CollectionSymbolPart<T> _wrappedSymbol;
+
+    public CollectionSymbol(
+        IEnumerable<T> source,
+        Func<T, TemplateString>? callback,
+        CollectionRenderOptions? options)
+    {
+        _wrappedSymbol = new CollectionSymbolPart<T>(source, callback, options);
+    }
+
+    public CollectionSymbol(
+        IEnumerable<T> source,
+        Action<Template, T> callback,
+        CollectionRenderOptions? options)
+    {
+        _wrappedSymbol = new CollectionSymbolPart<T>(source, callback, options);
+    }
+
     public void Render(Template template)
     {
-        using var _ = template.BeginMultilineStringScope();
-
-        if (paddingOptions != null)
+        // Disable current padding if there is one
+        if (template.CurrentPadding != null)
         {
-            using var __ = template.BeginPaddingScope(paddingOptions, paddingGroupName);
-            RenderCore(template);
+            using var _ = template.BeginBufferingScope();
+            _wrappedSymbol.Render(template);
             return;
         }
 
-        RenderCore(template);
-    }
-
-    private void RenderCore(Template template)
-    {
-        var hasFormat = options.Alignment != 0 || options.Format != null;
-        var hasItem = false;
-        foreach (var item in source)
-        {
-            if (hasItem && !string.IsNullOrEmpty(options.Separator))
-            {
-                template.WriteLiteral(options.Separator);
-            }
-
-            if (callback != null)
-            {
-                template.Write(TemplateStringSymbol.Create(item, callback));
-            }
-            else if (hasFormat)
-            {
-                template.Write(item, options.Alignment, options.Format);
-            }
-            else
-            {
-                template.Write(item);
-            }
-
-            template.CurrentPadding?.NextItem();
-            hasItem = true;
-        }
-
-        if (!hasItem && options.EmptyValue != null)
-        {
-            template.Write(options.EmptyValue);
-        }
+        _wrappedSymbol.Render(template);
     }
 }
