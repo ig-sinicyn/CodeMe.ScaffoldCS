@@ -1,319 +1,373 @@
 ﻿using System.Collections;
-using System.Runtime.CompilerServices;
 using CodeMe.ScaffoldCS.Templates.Infrastructure;
 using CodeMe.ScaffoldCS.Templates.Internals;
 using CodeMe.ScaffoldCS.Templates.Output;
 using CodeMe.ScaffoldCS.Templates.Render;
+using CodeMe.ScaffoldCS.Templates.Render.PartSymbols;
+using CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
 
 namespace CodeMe.ScaffoldCS.Templates;
 
 public partial class Template
 {
+    // TODO: add string builder support
+
     public Template SetLineHandling(CurrentLineHandlingMode lineHandling)
     {
-        if (ShouldWrite)
+        if (!_branchState.ShouldWrite)
         {
-            _writer.SetCurrentLineHandling(lineHandling);
+            return this;
         }
 
+        if (_bufferState.ShouldBuffer)
+        {
+            _bufferState.Append(new LineHandlingSymbol(lineHandling));
+            return this;
+        }
+
+        _textWriter.SetCurrentLineHandling(lineHandling);
         return this;
     }
 
     public Template ClearLine()
     {
-        if (ShouldWrite)
+        if (!_branchState.ShouldWrite)
         {
-            _writer.ClearLine();
+            return this;
         }
 
+        if (_bufferState.ShouldBuffer)
+        {
+            _bufferState.Append(new ClearLineSymbol());
+            return this;
+        }
+
+        _textWriter.ClearLine();
         return this;
     }
 
     public Template WriteLine()
     {
-        if (ShouldWrite)
+        if (!_branchState.ShouldWrite)
         {
-            _writer.AppendLine();
+            return this;
         }
 
-        return this;
-    }
-
-    public Template WriteLiteral(string? value)
-    {
-        if (ShouldWrite)
+        if (_bufferState.ShouldBuffer)
         {
-            _writer.Append(value);
+            _bufferState.Append(new NewLineSymbol());
+            return this;
         }
 
+        _textWriter.AppendLine();
         return this;
     }
 
-    public Template Write(string? value)
+    public Template WriteLiteral(string? value) =>
+        WriteLiteral(value.AsMemory());
+
+    public Template WriteLiteral(ReadOnlyMemory<char> value)
     {
-        Write(value.AsSpan());
+        if (!_branchState.ShouldWrite)
+        {
+            return this;
+        }
+
+        if (_bufferState.ShouldBuffer)
+        {
+            _bufferState.Append(new LiteralSymbol(value));
+            return this;
+        }
+
+        _textWriter.Append(value);
         return this;
     }
 
-    public Template Write(string? value, int alignment)
+    public Template WriteLiteral(ReadOnlySpan<char> value)
     {
-        Write(value.AsSpan(), alignment);
+        if (!_branchState.ShouldWrite)
+        {
+            return this;
+        }
+
+        if (_bufferState.ShouldBuffer)
+        {
+            _bufferState.Append(new LiteralSymbol(value.ToArray()));
+            return this;
+        }
+
+        _textWriter.Append(value);
         return this;
     }
 
-    public Template WriteLine(string? value)
-    {
-        Write(value);
-        WriteLine();
+    public Template Write(string? value) => Write(value.AsMemory());
 
-        return this;
-    }
+    public Template Write(string? value, int alignment) => Write(value.AsMemory(), alignment);
 
     public Template Write(ReadOnlyMemory<char> value)
     {
-        Write(value.Span);
+        if (!_branchState.ShouldWrite)
+        {
+            return this;
+        }
 
+        if (_bufferState.ShouldBuffer)
+        {
+            _bufferState.Append(ToValueSymbol(value));
+            return this;
+        }
+
+        if (value.Span.IsMultiline())
+        {
+            using var _ = this.BeginMultilineStringScope();
+            _textWriter.Append(value);
+            return this;
+        }
+
+        _textWriter.Append(value);
         return this;
     }
 
     public Template Write(ReadOnlyMemory<char> value, int alignment)
     {
-        Write(value.Span, alignment);
+        if (!_branchState.ShouldWrite)
+        {
+            return this;
+        }
 
-        return this;
-    }
+        if (_bufferState.ShouldBuffer)
+        {
+            _bufferState.Append(ToValueSymbol(value, alignment));
+            return this;
+        }
 
-    public Template WriteLine(ReadOnlyMemory<char> value)
-    {
-        WriteLine(value.Span);
+        if (value.Span.IsMultiline())
+        {
+            using var _ = this.BeginMultilineStringScope();
+            _textWriter.Append(value, alignment);
+            return this;
+        }
 
+        _textWriter.Append(value, alignment);
         return this;
     }
 
     public Template Write(ReadOnlySpan<char> value)
     {
-        if (ShouldWrite)
+        if (!_branchState.ShouldWrite)
         {
-            if (value.IsMultiline())
-            {
-                using var _ = BeginOptionsScope(IndentationFormat.CurrentLine);
-                _writer.Append(value);
-            }
-            else
-            {
-                _writer.Append(value);
-            }
+            return this;
         }
 
+        if (_bufferState.ShouldBuffer)
+        {
+            _bufferState.Append(ToValueSymbol((ReadOnlyMemory<char>)value.ToArray()));
+            return this;
+        }
+
+        if (value.IsMultiline())
+        {
+            using var _ = this.BeginMultilineStringScope();
+            _textWriter.Append(value);
+            return this;
+        }
+
+        _textWriter.Append(value);
         return this;
     }
 
     public Template Write(ReadOnlySpan<char> value, int alignment)
     {
-        if (ShouldWrite)
+        if (!_branchState.ShouldWrite)
         {
-            _writer.Append(value, alignment);
+            return this;
         }
 
-        return this;
-    }
-
-    public Template WriteLine(ReadOnlySpan<char> value)
-    {
-        Write(value);
-        WriteLine();
-
-        return this;
-    }
-
-    public Template Write(IEnumerable value)
-    {
-        if (ShouldWrite)
+        if (_bufferState.ShouldBuffer)
         {
-            value.Cast<object>().Render(DefaultCollectionRenderOptions).Render(this);
+            _bufferState.Append(ToValueSymbol((ReadOnlyMemory<char>)value.ToArray(), alignment));
+            return this;
         }
 
+        if (value.IsMultiline())
+        {
+            using var _ = this.BeginMultilineStringScope();
+            _textWriter.Append(value, alignment);
+            return this;
+        }
+
+        _textWriter.Append(value, alignment);
         return this;
     }
 
-    public Template Write(IEnumerable value, int alignment, string? format = null)
+    public Template Write<T>(T value)
     {
-        if (ShouldWrite)
+        // The render logic may change active condition branch
+        // so we call Render() even if we are inside an inactive condition branch.
+        // We do ignore value symbols here, though.
+        if (value is ITemplateSymbol && !(value is ITemplateValueSymbol))
         {
-            var options = DefaultCollectionRenderOptions with
+            ((ITemplateSymbol)value).Render(this);
+            return this;
+        }
+
+        if (!_branchState.ShouldWrite)
+        {
+            return this;
+        }
+
+        if (value is string s)
+        {
+            Write(s);
+            return this;
+        }
+
+        if (value is ReadOnlyMemory<char> c)
+        {
+            Write(c);
+            return this;
+        }
+
+        if (value is ITemplateValueSymbol)
+        {
+            if (_bufferState.ShouldBuffer)
             {
-                Alignment = alignment,
-                Format = format
-            };
-            value.Cast<object>().Render(options).Render(this);
-        }
-
-        return this;
-    }
-
-    // TODO: dictionary symbol
-    public Template Write<T>(IEnumerable<T> value)
-    {
-        if (ShouldWrite)
-        {
-            value.Render(DefaultCollectionRenderOptions).Render(this);
-        }
-
-        return this;
-    }
-
-    public Template Write<T>(IEnumerable<T> value, int alignment, string? format = null)
-    {
-        if (ShouldWrite)
-        {
-            var options = DefaultCollectionRenderOptions with
+                _bufferState.Append((ITemplateValueSymbol)value);
+            }
+            else
             {
-                Alignment = alignment,
-                Format = format
-            };
-            value.Render(options).Render(this);
-        }
-
-        return this;
-    }
-
-    public Template Write([InterpolatedStringHandlerArgument("")] TemplatePart value)
-    {
-        ((ITemplateScope)value).DisposeIfSame(this);
-
-        return this;
-    }
-
-    public Template WriteLine([InterpolatedStringHandlerArgument("")] TemplatePart value)
-    {
-        Write(value);
-        WriteLine();
-
-        return this;
-    }
-
-    internal Template CompleteScope<TScoped>(TScoped value)
-        where TScoped : ITemplateScope
-    {
-        value.DisposeIfSame(this);
-
-        return this;
-    }
-
-    public Template Write(ITemplateSymbol value)
-    {
-        if (ShouldWrite || value is IControlTemplateSymbol)
-        {
-            value.Render(this);
-        }
-
-        return this;
-    }
-
-    public Template Write<T>(T? value)
-    {
-        if (value is null)
-        {
-            Write((string?)null);
-            return this;
-        }
-
-        if (value is string @string)
-        {
-            Write(@string);
-            return this;
-        }
-
-        if (value is ReadOnlyMemory<char> memory)
-        {
-            Write(memory);
-            return this;
-        }
-
-        if (value is ITemplateScope)
-        {
-            ((ITemplateScope)value).DisposeIfSame(this);
-            return this;
-        }
-
-        if (value is ITemplateSymbol)
-        {
-            if (ShouldWrite || value is IControlTemplateSymbol)
-            {
-                ((ITemplateSymbol)value).Render(this);
+                ((ITemplateValueSymbol)value).Render(this);
             }
 
             return this;
         }
 
-        if (value is IEnumerable enumerable)
+        if (value is IInterpolatedString)
         {
-            Write(enumerable);
             return this;
         }
 
-        if (ShouldWrite)
+        if (value is IEnumerable)
         {
-            _writer.Append(value);
+            ((IEnumerable)value)
+                .Cast<object>()
+                .Render(DefaultCollectionRenderOptions)
+                .Render(this);
+            return this;
         }
 
+        if (_bufferState.ShouldBuffer)
+        {
+            _bufferState.Append(ToValueSymbol(value));
+            return this;
+        }
+
+        _textWriter.Append(value);
         return this;
     }
 
-    public Template Write<T>(T? value, int alignment, string? format = null)
+    public Template Write<T>(T value, int alignment, string? format = null)
     {
-        if (value is null)
+        // The render logic may change active condition branch
+        // so we call Render() even if we are inside an inactive condition branch.
+        // We do ignore value symbols here, though.
+        if (value is ITemplateSymbol && !(value is ITemplateValueSymbol))
         {
-            Write((string?)null);
+            ((ITemplateSymbol)value).Render(this);
             return this;
         }
 
-        if (value is string @string)
+        if (!_branchState.ShouldWrite)
         {
-            Write(@string, alignment);
             return this;
         }
 
-        if (value is ReadOnlyMemory<char> memory)
+        if (value is string s)
         {
-            Write(memory, alignment);
+            Write(s, alignment, format);
             return this;
         }
 
-        if (value is TemplatePart templatePart)
+        if (value is ReadOnlyMemory<char> c)
         {
-            Write(templatePart);
+            Write(c, alignment, format);
             return this;
         }
 
-        if (value is ITemplateSymbol)
+        if (value is ITemplateValueSymbol)
         {
-            if (ShouldWrite || value is IControlTemplateSymbol)
+            if (_bufferState.ShouldBuffer)
             {
-                ((ITemplateSymbol)value).Render(this);
+                _bufferState.Append(EnsurePaddingColumn((ITemplateValueSymbol)value));
+            }
+            else
+            {
+                ((ITemplateValueSymbol)value).Render(this);
             }
 
             return this;
         }
 
-        if (value is IEnumerable enumerable)
+        if (value is IInterpolatedString)
         {
-            Write(enumerable, alignment, format);
             return this;
         }
 
-        if (ShouldWrite)
+        if (value is IEnumerable)
         {
-            _writer.Append(value, alignment, format);
+            ((IEnumerable)value)
+                .Cast<object>()
+                .Render(
+                    DefaultCollectionRenderOptions with
+                    {
+                        Alignment = alignment,
+                        Format = format
+                    })
+                .Render(this);
+            return this;
         }
 
+        if (_bufferState.ShouldBuffer)
+        {
+            _bufferState.Append(ToValueSymbol(value, alignment));
+            return this;
+        }
+
+        _textWriter.Append(value, alignment, format);
         return this;
     }
 
-    public Template WriteLine<T>(T? value)
+    public Template Write(TemplateString templateString) => Write<TemplateString>(templateString);
+
+    public Template Write(Action<Template> callback) => Write(new TemplateActionSymbol(callback));
+
+    public Template Write(Func<TemplateString> callback) => Write(new TemplateStringSymbol(callback));
+
+    public Template Write(IEnumerable values) => Write(values.Cast<object>().Render(DefaultCollectionRenderOptions));
+
+    public Template Write<T>(IEnumerable<T> values) => Write(values.Render(DefaultCollectionRenderOptions));
+
+    private ITemplateValueSymbol ToValueSymbol<T>(T value, int alignment = 0)
     {
-        Write(value);
-        WriteLine();
-        return this;
+        if (_bufferState.CurrentPadding is { Options.Padding: not PaddingMode.None } padding)
+        {
+            return new PaddingSymbol<T>(value, padding.Options, alignment)
+            {
+                Column = padding.GetNextColumn()
+            };
+        }
+
+        return new ValueSymbol<T>(value, alignment);
+    }
+
+    private ITemplateValueSymbol EnsurePaddingColumn(ITemplateValueSymbol value)
+    {
+        if (value is IPaddingSymbol paddingSymbol
+            && _bufferState.CurrentPadding is { Options.Padding: not PaddingMode.None } padding)
+        {
+            paddingSymbol.Column ??= padding.GetNextColumn();
+        }
+
+        return value;
     }
 }

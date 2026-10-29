@@ -2,13 +2,13 @@
 
 public enum IndentationFormat
 {
-    CurrentLine,
-
-    CurrentLineWhitespace,
-
     CurrentIndentation,
 
     IncreasedIndentation,
+
+    CurrentLine,
+
+    CurrentLineWhitespace,
 
     Empty
 }

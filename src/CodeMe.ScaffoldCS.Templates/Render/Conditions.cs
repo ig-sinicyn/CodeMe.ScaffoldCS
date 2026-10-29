@@ -4,7 +4,7 @@ namespace CodeMe.ScaffoldCS.Templates.Render;
 
 public static class Conditions
 {
-    public static bool HasValue<T>(T? value) =>
+    public static bool HasValue<T>(T value) =>
         value switch
         {
             null => false,

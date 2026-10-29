@@ -6,7 +6,7 @@ public static class AmbientTemplate
 {
     private static readonly ScopedAsyncLocal<Template> _templateStack = new();
 
-    internal static IDisposable BeginTemplateScope(Template context) => _templateStack.BeginScope(context);
+    internal static IDisposable BeginTemplateScope(Template template) => _templateStack.BeginScope(template);
 
     public static Template Current => _templateStack.Current
         ?? throw new InvalidOperationException(

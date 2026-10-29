@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SampleTemplates": {
+      "commandName": "Project",
+      "commandLineArgs": "AllowOverwrite=true ModelPath=AccountInfo.cs ModelBasePath=..\\..\\..\\..\\examples\\SampleApps.Desired\\Accounts\\ OutputPath=..\\..\\..\\..\\examples\\SampleApps.Scaffolded\\Accounts\\"
+    }
+  }
+}

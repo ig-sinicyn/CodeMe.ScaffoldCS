@@ -8,7 +8,8 @@ using static SymbolsCS;
 
 public class TemplateTests
 {
-    private static readonly Class _testDto = new(
+    private static readonly Dto _testDto = new(
+        "TestModels",
         "TestDto",
         "Test details",
         [
@@ -22,19 +23,25 @@ public class TemplateTests
     {
         // Arrange
         var dto = _testDto;
-        var writer = CreateTemplate();
-        using var _ = writer.BeginAmbientScope();
+        var template = CreateTemplate();
+        using var _ = template.BeginAmbientScope();
 
         // Act
-        writer.Write(
+        template.Write(
             $$"""
+            {{
+                COMMENT(
+                    "This template should render DTO as C# class")
+            }}
             using System;
             
-            namespace TestModels;
-            
-            {{IF(dto.Comment)}}/// <summary>
+            namespace {{dto.Namespace}};
+
+            {{IF(dto.Comment)}}
+            /// <summary>
             /// {{dto.Comment}}.
-            /// </summary>{{ENDIF}}
+            /// </summary>
+            {{ENDIF}}
             public class {{dto.Name}}
             {
                 {{dto.Properties.RenderEmptyLineSeparated(RenderProperty)}}
@@ -42,7 +49,8 @@ public class TemplateTests
             """);
 
         // Assert
-        writer.ShouldBe(
+        // language=c#
+        template.ShouldBe(
             """
             using System;
             
@@ -70,6 +78,21 @@ public class TemplateTests
     }
 
     [Fact]
+    public void Write_ShouldBeExpected()
+    {
+        // Arrange
+        var name = "user";
+        var template = CreateTemplate();
+        using var _ = template.BeginAmbientScope();
+
+        // Act
+        template.Write($"Hello, {name}!");
+
+        // Assert
+        template.ShouldBe("Hello, user!");
+    }
+
+    [Fact]
     public void TestScenario_EmptyProperties_ShouldBeExpected()
     {
         // Arrange
@@ -77,15 +100,15 @@ public class TemplateTests
         {
             Properties = []
         };
-        var writer = CreateTemplate();
-        using var _ = writer.BeginAmbientScope();
+        var template = CreateTemplate();
+        using var _ = template.BeginAmbientScope();
 
         // Act
-        writer.Write(
+        template.Write(
             $$"""
             using System;
             
-            namespace TestModels;
+            namespace {{dto.Namespace}};
             
             {{IF(dto.Comment)}}/// <summary>
             /// {{dto.Comment}}.
@@ -97,7 +120,8 @@ public class TemplateTests
             """);
 
         // Assert
-        writer.ShouldBe(
+        // language=c#
+        template.ShouldBe(
             """
             using System;
             
@@ -113,6 +137,34 @@ public class TemplateTests
     }
 
     [Fact]
+    public void TestScenario_EmptyProperties2_ShouldBeExpected()
+    {
+        // Arrange
+        var dto = _testDto with
+        {
+            Properties = []
+        };
+        var template = CreateTemplate();
+        using var _ = template.BeginAmbientScope();
+
+        // Act
+        template.Write(
+            $$"""
+            {
+                {{dto.Properties.RenderEmptyLineSeparated(RenderProperty)}}
+            }
+            """);
+
+        // Assert
+        // language=c#
+        template.ShouldBe(
+            """
+            {
+            }
+            """);
+    }
+
+    [Fact]
     public void TestScenario_IfComment_ShouldBeExpected()
     {
         // Arrange
@@ -121,15 +173,15 @@ public class TemplateTests
             Comment = "",
             Properties = []
         };
-        var writer = CreateTemplate();
-        using var _ = writer.BeginAmbientScope();
+        var template = CreateTemplate();
+        using var _ = template.BeginAmbientScope();
 
         // Act
-        writer.Write(
+        template.Write(
             $$"""
             using System;
             
-            namespace TestModels;
+            namespace {{dto.Namespace}};
             
             {{IF(dto.Comment)}}/// <summary>
             /// {{dto.Comment}}.
@@ -141,7 +193,8 @@ public class TemplateTests
             """);
 
         // Assert
-        writer.ShouldBe(
+        // language=c#
+        template.ShouldBe(
             """
             using System;
             
@@ -161,15 +214,15 @@ public class TemplateTests
         {
             Properties = []
         };
-        var writer = CreateTemplate();
-        using var _ = writer.BeginAmbientScope();
+        var template = CreateTemplate();
+        using var _ = template.BeginAmbientScope();
 
         // Act
-        writer.Write(
+        template.Write(
             $$"""
             using System;
             
-            namespace TestModels;
+            namespace {{dto.Namespace}};
             
             {{IF(dto.Comment)}}/// <summary>
             /// {{dto.Comment}}.
@@ -185,7 +238,8 @@ public class TemplateTests
             """);
 
         // Assert
-        writer.ShouldBe(
+        // language=c#
+        template.ShouldBe(
             """
             using System;
 
@@ -205,11 +259,11 @@ public class TemplateTests
     {
         // Arrange
         var dto = _testDto;
-        var writer = CreateTemplate();
-        using var _ = writer.BeginAmbientScope();
+        var template = CreateTemplate();
+        using var _ = template.BeginAmbientScope();
 
         // Act
-        writer.Write(
+        template.Write(
             $$"""
             using System;
             
@@ -229,7 +283,8 @@ public class TemplateTests
             """);
 
         // Assert
-        writer.ShouldBe(
+        // language=c#
+        template.ShouldBe(
             """
             using System;
 
@@ -262,11 +317,11 @@ public class TemplateTests
     public void Iif_True_ShouldBeExpected()
     {
         // Arrange
-        var writer = CreateTemplate();
-        using var _ = writer.BeginAmbientScope();
+        var template = CreateTemplate();
+        using var _ = template.BeginAmbientScope();
 
         // Act
-        writer.Write(
+        template.Write(
             $"""
             True={IIF(1, 1)}.
             False={IIF(0, 1)}.
@@ -275,7 +330,7 @@ public class TemplateTests
             """);
 
         // Assert
-        writer.ShouldBe(
+        template.ShouldBe(
             """
             True=1.
             False=.
@@ -285,14 +340,38 @@ public class TemplateTests
     }
 
     [Fact]
+    public void ClearLine_ShouldBeExpected()
+    {
+        // Arrange
+        var template = CreateTemplate();
+        using var _ = template.BeginAmbientScope();
+
+        // Act
+        template.Write(
+            $"""
+            111{CL}222
+            333{CL}
+            {CL}444
+            """);
+
+        // Assert
+        template.ShouldBe(
+            """
+            222
+            
+            444
+            """);
+    }
+
+    [Fact]
     public void Iif_True_Template_ShouldBeExpected()
     {
         // Arrange
-        var writer = CreateTemplate();
-        using var _ = writer.BeginAmbientScope();
+        var template = CreateTemplate();
+        using var _ = template.BeginAmbientScope();
 
         // Act
-        writer.Write(
+        template.Write(
             $"""
             True={IIF(1, $"Hi, '{_testDto.Name}'")}!
             False={IIF(0, $"Hi, '{_testDto.Name}'")}!
@@ -301,7 +380,7 @@ public class TemplateTests
             """);
 
         // Assert
-        writer.ShouldBe(
+        template.ShouldBe(
             """
             True=Hi, 'TestDto'!
             False=!
@@ -311,14 +390,31 @@ public class TemplateTests
     }
 
     [Fact]
+    public void RemoveLine_ShouldBeExpected()
+    {
+        // Arrange
+        var template = CreateTemplate();
+        using var _ = template.BeginAmbientScope();
+
+        // Act
+        template.Write(
+            $"""
+            {RL}
+            """);
+
+        // Assert
+        template.ShouldBe("");
+    }
+
+    [Fact]
     public void MultipleRemoveLine_ShouldBeExpected()
     {
         // Arrange
-        var dto = _testDto;
-        var writer = CreateTemplate();
-        using var _ = writer.BeginAmbientScope();
+        var template = CreateTemplate();
+        using var _ = template.BeginAmbientScope();
+
         // Act
-        writer.Write(
+        template.Write(
             $"""
             {RL}
             {RL}
@@ -326,13 +422,55 @@ public class TemplateTests
             """);
 
         // Assert
-        writer.ShouldBe(
+        template.ShouldBe("");
+    }
+
+    [Fact]
+    public void Collection_ShouldBeExpected()
+    {
+        // Arrange
+        var data = new[] { 1, 2, 3 };
+        var template = CreateTemplate();
+        using var _ = template.BeginAmbientScope();
+
+        // Act
+        template.Write(
+            $"""
+            * {data.Render()}           
+            """);
+
+        // Assert
+        template.ShouldBe(
             """
-            
+            * 1
+            * 2
+            * 3
             """);
     }
 
-    private static TemplatePart RenderProperty(Property property) =>
+    [Fact]
+    public void CollectionEmpty_ShouldBeExpected()
+    {
+        // Arrange
+        var data = Array.Empty<int>();
+        var template = CreateTemplate();
+        using var _ = template.BeginAmbientScope();
+        var collectionOptions = CollectionRenderOptions.Multiline with
+        {
+            EmptyValue = RL
+        };
+
+        // Act
+        template.Write(
+            $"""
+            * {data.Render(collectionOptions)}           
+            """);
+
+        // Assert
+        template.ShouldBe("");
+    }
+
+    private static TemplateString RenderProperty(Property property) =>
         $$"""
         {{IF(property.Comment)}}
         /// <summary>

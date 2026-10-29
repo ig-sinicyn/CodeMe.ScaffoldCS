@@ -1,12 +1,14 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using CodeMe.ScaffoldCS.Templates.Render.PartSymbols;
+using CodeMe.ScaffoldCS.Templates.Render.ValueSymbols;
 
 namespace CodeMe.ScaffoldCS.Templates.Render;
 
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public static class SymbolsCS
 {
-    public static readonly ValueSymbol<string> NL = Symbols.NewLine;
+    public static readonly NewLineSymbol NL = Symbols.NewLine;
 
     public static readonly ClearLineSymbol CL = Symbols.ClearLine;
 
@@ -15,6 +17,8 @@ public static class SymbolsCS
     public static readonly LineHandlingSymbol REL = Symbols.RemoveEmptyLine;
 
     public static readonly LineHandlingSymbol RWL = Symbols.RemoveWhitespaceLine;
+
+    public static LineHandlingSymbol COMMENT(string comment) => Symbols.Comment(comment);
 
     public static ConditionBranchSymbol IF<T>(T value) => Symbols.If(value);
 
@@ -27,29 +31,53 @@ public static class SymbolsCS
     public static ConditionSymbol<TTrue> IIF<T, TTrue>(T condition, TTrue trueValue) =>
         Symbols.Iif(condition, trueValue);
 
-    public static ConditionSymbol<IfTrueTemplatePart<T>> IIF<T>(
+    public static ConditionSymbol<IfTrueTemplateString<T>> IIF<T>(
         T condition,
-        [InterpolatedStringHandlerArgument(nameof(condition))] IfTrueTemplatePart<T> trueValue) =>
+        [InterpolatedStringHandlerArgument(nameof(condition))] IfTrueTemplateString<T> trueValue) =>
         Symbols.Iif(condition, trueValue);
 
-    public static ConditionSymbol<TTrue, TFalse> IIF<T, TTrue, TFalse>(T condition, TTrue trueValue, TFalse falseValue) =>
-        Symbols.Iif(condition, trueValue, falseValue);
-
-    public static ConditionSymbol<IfTrueTemplatePart<T>, IfFalseTemplatePart<T>> IIF<T>(
+    public static ConditionSymbol<TTrue, TFalse> IIF<T, TTrue, TFalse>(
         T condition,
-        [InterpolatedStringHandlerArgument(nameof(condition))] IfTrueTemplatePart<T> trueValue,
-        [InterpolatedStringHandlerArgument(nameof(condition))] IfFalseTemplatePart<T> falseValue) =>
-        Symbols.Iif(condition, trueValue, falseValue);
-
-    public static ConditionSymbol<IfTrueTemplatePart<T>, TFalse> IIF<T, TFalse>(
-        T condition,
-        [InterpolatedStringHandlerArgument(nameof(condition))] IfTrueTemplatePart<T> trueValue,
+        TTrue trueValue,
         TFalse falseValue) =>
         Symbols.Iif(condition, trueValue, falseValue);
 
-    public static ConditionSymbol<TTrue, IfFalseTemplatePart<T>> IIF<T, TTrue>(
+    public static ConditionSymbol<IfTrueTemplateString<T>, IfFalseTemplateString<T>> IIF<T>(
+        T condition,
+        [InterpolatedStringHandlerArgument(nameof(condition))] IfTrueTemplateString<T> trueValue,
+        [InterpolatedStringHandlerArgument(nameof(condition))] IfFalseTemplateString<T> falseValue) =>
+        Symbols.Iif(condition, trueValue, falseValue);
+
+    public static ConditionSymbol<IfTrueTemplateString<T>, TFalse> IIF<T, TFalse>(
+        T condition,
+        [InterpolatedStringHandlerArgument(nameof(condition))] IfTrueTemplateString<T> trueValue,
+        TFalse falseValue) =>
+        Symbols.Iif(condition, trueValue, falseValue);
+
+    public static ConditionSymbol<TTrue, IfFalseTemplateString<T>> IIF<T, TTrue>(
         T condition,
         TTrue trueValue,
-        [InterpolatedStringHandlerArgument(nameof(condition))] IfFalseTemplatePart<T> falseValue) =>
+        [InterpolatedStringHandlerArgument(nameof(condition))] IfFalseTemplateString<T> falseValue) =>
         Symbols.Iif(condition, trueValue, falseValue);
+
+    public static LiteralSymbol LITERAL(string? value) =>
+        Symbols.Literal(value);
+
+    public static PaddingSymbol<T> LPAD<T>(T value, int minLength = 0) =>
+        Symbols.PadLeft(value, minLength);
+
+    public static PaddingSymbol<T> LPAD<T>(T value, char paddingChar, int minLength = 0) =>
+        Symbols.PadLeft(value, paddingChar, minLength);
+
+    public static PaddingSymbol<T> RPAD<T>(T value, int minLength = 0) =>
+        Symbols.PadRight(value, minLength);
+
+    public static PaddingSymbol<T> RPAD<T>(T value, char paddingChar, int minLength = 0) =>
+        Symbols.PadRight(value, paddingChar, minLength);
+
+    public static PaddingSymbol<T> CENTER<T>(T value, int minLength = 0) =>
+        Symbols.PadCenter(value, minLength);
+
+    public static PaddingSymbol<T> CENTER<T>(T value, char paddingChar, int minLength = 0) =>
+        Symbols.PadCenter(value, paddingChar, minLength);
 }

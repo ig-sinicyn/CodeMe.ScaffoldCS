@@ -1,0 +1,326 @@
+﻿using CodeMe.ScaffoldCS.Metadata.CodeModel;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using TypeInfo = CodeMe.ScaffoldCS.Metadata.CodeModel.TypeInfo;
+
+namespace CodeMe.ScaffoldCS.Metadata.CSharp;
+
+internal static class CSharpModelParser
+{
+    public static BaseTypeDeclarationSyntax? ResolveTargetTypeOrDefault(CompilationUnitSyntax root, string? typeName)
+    {
+        var candidates = root.DescendantNodes()
+            .OfType<BaseTypeDeclarationSyntax>()
+            .Where(
+                type => type is RecordDeclarationSyntax
+                    or ClassDeclarationSyntax
+                    or InterfaceDeclarationSyntax
+                    or RecordDeclarationSyntax
+                    or StructDeclarationSyntax
+                    or EnumDeclarationSyntax)
+            .ToArray();
+
+        if (candidates.Length == 0)
+        {
+            return null;
+        }
+
+        if (string.IsNullOrWhiteSpace(typeName))
+        {
+            return candidates[0];
+        }
+
+        return candidates.FirstOrDefault(type => type.NameMatches(typeName))
+            ?? candidates.FirstOrDefault(type => type.FullNameMatches(typeName));
+    }
+
+    public static BaseTypeDeclarationSyntax ResolveTargetType(CompilationUnitSyntax root, string? typeName) =>
+        ResolveTargetTypeOrDefault(root, typeName)
+        ?? throw new InvalidOperationException(
+            $"Unable to resolve the target type '{typeName}'.");
+
+    public static BaseTypeDeclarationSyntax ResolveTargetType(
+        IEnumerable<CompilationUnitSyntax> roots,
+        string? typeName) =>
+        roots
+            .Select(x => ResolveTargetTypeOrDefault(x, typeName))
+            .FirstOrDefault(x => x != null)
+        ?? throw new InvalidOperationException(
+            $"Unable to resolve the target type '{typeName}'.");
+
+    public static DtoModel ParseDto(BaseTypeDeclarationSyntax declaration, CSharpCompilation compilation) =>
+        declaration switch
+        {
+            RecordDeclarationSyntax x => ParseDto(x, compilation),
+            TypeDeclarationSyntax x => ParseDto(x, compilation),
+            EnumDeclarationSyntax x => ParseDto(x, compilation),
+            _ => throw new InvalidOperationException($"Unsupported declaration {declaration.GetType().Name}")
+        };
+
+    private static DtoModel ParseDto(TypeDeclarationSyntax declaration, CSharpCompilation compilation)
+    {
+        var model = compilation.GetSemanticModel(declaration.SyntaxTree);
+        var symbol = model.GetDeclaredSymbol(declaration)
+            ?? throw new InvalidOperationException(
+                $"Unable to resolve the target type '{declaration.Name}'.");
+
+        var fields = declaration.Members
+            .OfType<PropertyDeclarationSyntax>()
+            .Select(x => ParseDtoField(x, compilation));
+
+        return new DtoModel(
+            symbol.Name,
+            symbol.Namespace,
+            TypeRole.Dto,
+            symbol.GetDocumentationSummary(),
+            fields.ToArray());
+    }
+
+    private static DtoModel ParseDto(RecordDeclarationSyntax declaration, CSharpCompilation compilation)
+    {
+        var model = compilation.GetSemanticModel(declaration.SyntaxTree);
+        var symbol = model.GetDeclaredSymbol(declaration)
+            ?? throw new InvalidOperationException(
+                $"Unable to resolve the target type '{declaration.Name}'.");
+        var comment = symbol.GetMethodDocumentationSummary();
+
+        var fields = declaration.Members
+            .OfType<PropertyDeclarationSyntax>()
+            .Select(x => ParseDtoField(x, compilation));
+
+        if (declaration is { ParameterList: { } parameterList })
+        {
+            var parameters = parameterList.Parameters
+                .Select(x => ParseDtoField(x, comment.Parameters, compilation));
+
+            fields = parameters.Concat(fields);
+        }
+
+        return new DtoModel(
+            symbol.Name,
+            symbol.Namespace,
+            TypeRole.Dto,
+            comment.Summary,
+            fields.ToArray());
+    }
+
+    private static DtoModel ParseDto(EnumDeclarationSyntax declaration, CSharpCompilation compilation)
+    {
+        var model = compilation.GetSemanticModel(declaration.SyntaxTree);
+        var symbol = model.GetDeclaredSymbol(declaration)
+            ?? throw new InvalidOperationException(
+                $"Unable to resolve the target type '{declaration.Name}'.");
+
+        var underlyingType = symbol.EnumUnderlyingType == null
+            ? TypeInfo.Primitive("int")
+            : Resolve(symbol.EnumUnderlyingType, false);
+        var fields = declaration.Members
+            .Select(x => ParseDtoField(x, underlyingType, compilation));
+
+        return new DtoModel(
+            symbol.Name,
+            symbol.Namespace,
+            TypeRole.Enum,
+            symbol.GetDocumentationSummary(),
+            fields.ToArray());
+    }
+
+    private static DtoField ParseDtoField(
+        PropertyDeclarationSyntax declaration,
+        CSharpCompilation compilation)
+    {
+        var model = compilation.GetSemanticModel(declaration.SyntaxTree);
+        var symbol = model.GetDeclaredSymbol(declaration)
+            ?? throw new InvalidOperationException(
+                $"Unable to resolve the target symbol '{declaration.Identifier}'.");
+
+        var initializer = declaration.Initializer?.Value;
+        var constantValue = initializer switch
+        {
+            null => null,
+            _ when model.GetConstantValue(initializer) is { HasValue: true } x =>
+                x.Value,
+            _ => new DtoFieldInitializer(initializer.ToString())
+        };
+
+        return new DtoField(
+            symbol.Name,
+            Resolve(declaration.Type, model),
+            symbol.GetDocumentationSummary())
+        {
+            DefaultValue = constantValue
+        };
+    }
+
+    private static DtoField ParseDtoField(
+        ParameterSyntax declaration,
+        IReadOnlyDictionary<string, string> comments,
+        CSharpCompilation compilation)
+    {
+        var model = compilation.GetSemanticModel(declaration.SyntaxTree);
+        var symbol = model.GetDeclaredSymbol(declaration)
+            ?? throw new InvalidOperationException(
+                $"Unable to resolve the target symbol '{declaration.Identifier}'.");
+        var type = declaration.Type
+            ?? throw new InvalidOperationException(
+                $"Unable to resolve the target symbol type '{declaration.Identifier}'.");
+
+        return new DtoField(
+            symbol.Name,
+            Resolve(type, model),
+            comments.GetValueOrDefault(symbol.Name))
+        {
+            DefaultValue = symbol.HasExplicitDefaultValue ? symbol.ExplicitDefaultValue : null
+        };
+    }
+
+    private static DtoField ParseDtoField(
+        EnumMemberDeclarationSyntax declaration,
+        TypeInfo underlyingType,
+        CSharpCompilation compilation)
+    {
+        var model = compilation.GetSemanticModel(declaration.SyntaxTree);
+        var symbol = model.GetDeclaredSymbol(declaration)
+            ?? throw new InvalidOperationException(
+                $"Unable to resolve the target symbol '{declaration.Identifier}'.");
+
+        return new DtoField(
+            symbol.Name,
+            underlyingType,
+            symbol.GetDocumentationSummary())
+        {
+            DefaultValue = symbol.ConstantValue
+        };
+    }
+
+    private static TypeInfo Resolve(TypeSyntax typeSyntax, SemanticModel semanticModel)
+    {
+        var typeSymbol = semanticModel.GetTypeInfo(typeSyntax).Type;
+        if (typeSymbol is null)
+        {
+            return new TypeInfo(typeSyntax.ToString(), null, TypeRole.Primitive, false, []);
+        }
+
+        return Resolve(
+            typeSymbol,
+            typeSyntax is NullableTypeSyntax
+            || typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T);
+    }
+
+    private static TypeInfo Resolve(ITypeSymbol typeSymbol, bool isNullable)
+    {
+        // TODO: check for IsNullable
+        if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
+        {
+            return new TypeInfo(
+                arrayTypeSymbol.ElementType.Name,
+                arrayTypeSymbol.ElementType.Namespace,
+                TypeRole.Collection,
+                isNullable,
+                new[] { Resolve(arrayTypeSymbol.ElementType, false) });
+        }
+
+        if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
+        {
+            if (namedTypeSymbol.IsGenericType)
+            {
+                if (IsDictionary(namedTypeSymbol))
+                {
+                    return new TypeInfo(
+                        typeSymbol.Name,
+                        typeSymbol.Namespace,
+                        TypeRole.Dictionary,
+                        isNullable,
+                        namedTypeSymbol.TypeArguments.Select(arg => Resolve(arg, false)).ToArray());
+                }
+
+                if (IsCollection(namedTypeSymbol))
+                {
+                    return new TypeInfo(
+                        typeSymbol.Name,
+                        typeSymbol.Namespace,
+                        TypeRole.Collection,
+                        isNullable,
+                        namedTypeSymbol.TypeArguments.Select(arg => Resolve(arg, false)).ToArray());
+                }
+
+                if (IsNullableStruct(namedTypeSymbol))
+                {
+                    return Resolve(namedTypeSymbol.TypeArguments[0], true);
+                }
+            }
+
+            if (IsPrimitive(namedTypeSymbol))
+            {
+                return new TypeInfo(
+                    SymbolDisplay.ToDisplayString(namedTypeSymbol),
+                    null,
+                    TypeRole.Primitive,
+                    isNullable,
+                    []);
+            }
+
+            return new TypeInfo(
+                typeSymbol.Name,
+                typeSymbol.Namespace,
+                TypeRole.Dto,
+                isNullable,
+                namedTypeSymbol.TypeArguments.Select(arg => Resolve(arg, false)).ToArray());
+        }
+
+        return new TypeInfo(
+            typeSymbol.Name,
+            typeSymbol.Namespace,
+            TypeRole.Dto,
+            isNullable,
+            []);
+    }
+
+    private static bool IsDictionary(INamedTypeSymbol typeSymbol) =>
+        typeSymbol.Interfaces.Any(x => x.Name is "IDictionary" or "IReadOnlyDictionary");
+
+    private static bool IsCollection(INamedTypeSymbol typeSymbol) => typeSymbol.Interfaces.Any(
+        x => x.SpecialType is SpecialType.System_Array
+            or SpecialType.System_Collections_Generic_ICollection_T
+            or SpecialType.System_Collections_Generic_IReadOnlyCollection_T);
+
+    private static bool IsNullableStruct(INamedTypeSymbol typeSymbol) =>
+        typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
+
+    private static bool IsPrimitive(INamedTypeSymbol typeSymbol)
+    {
+        if (typeSymbol.SpecialType is
+            SpecialType.System_Void or
+            SpecialType.System_Boolean or
+            SpecialType.System_Byte or
+            SpecialType.System_SByte or
+            SpecialType.System_Int16 or
+            SpecialType.System_UInt16 or
+            SpecialType.System_Int32 or
+            SpecialType.System_UInt32 or
+            SpecialType.System_Int64 or
+            SpecialType.System_UInt64 or
+            SpecialType.System_Single or
+            SpecialType.System_Double or
+            SpecialType.System_Decimal or
+            SpecialType.System_Char or
+            SpecialType.System_String)
+        {
+            return true;
+        }
+
+        return typeSymbol.ToDisplayString()
+            is "DateTime"
+            or "DateOnly"
+            or "DateTimeOffset"
+            or "TimeOnly"
+            or "TimeSpan"
+            or "Guid"
+            or "Index"
+            or "Range"
+            or "Half"
+            or "System.Numerics.BigInteger"
+            or "System.Numerics.Complex";
+    }
+}
