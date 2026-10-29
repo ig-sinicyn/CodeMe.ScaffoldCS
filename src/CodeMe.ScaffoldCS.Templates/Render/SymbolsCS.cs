@@ -60,6 +60,9 @@ public static class SymbolsCS
         [InterpolatedStringHandlerArgument(nameof(condition))] IfFalseTemplateString<T> falseValue) =>
         Symbols.Iif(condition, trueValue, falseValue);
 
+    public static LiteralSymbol LITERAL(string? value) =>
+        Symbols.Literal(value);
+
     public static PaddingSymbol<T> LPAD<T>(T value, int minLength = 0) =>
         Symbols.PadLeft(value, minLength);
 

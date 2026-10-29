@@ -44,7 +44,9 @@ public class TemplatePaddingTests
             """
             --------------- test_dto ---------------
             CREATE TABLE test_models.test_dto (
+                -- Identifier
                 id         BIGINT       GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                -- Dto name details
                 name       VARCHAR(255) NOT NULL,
                 created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
                 updated_at TIMESTAMPTZ  NULL
@@ -58,8 +60,15 @@ public class TemplatePaddingTests
 
     private static TemplateString RenderProperty(Property x) =>
         x.Name == "id"
-            ? (TemplateString)$"{x.Name} {x.Type} GENERATED ALWAYS AS IDENTITY PRIMARY KEY"
-            : $"{x.Name} {x.Type} {IIF(x.IsNullable, "NULL", "NOT NULL")}{IIF(x.Default, $" DEFAULT {x.Default}")}";
+            ? (TemplateString)
+            $"""
+            {IF(x.Comment)}-- {LITERAL(x.Comment)}{ENDIF}
+            {x.Name} {x.Type} GENERATED ALWAYS AS IDENTITY PRIMARY KEY
+            """
+            : $"""
+              {IF(x.Comment)}-- {LITERAL(x.Comment)}{ENDIF}
+              {x.Name} {x.Type} {IIF(x.IsNullable, "NULL", "NOT NULL")}{IIF(x.Default, $" DEFAULT {x.Default}")}
+              """;
 
     private static void RenderComments(Template template, Dto dto)
     {
@@ -68,14 +77,14 @@ public class TemplatePaddingTests
         if (Conditions.HasValue(dto.Comment))
         {
             template
-                .Write($"COMMENT ON {"TABLE"} {$"{dto.Namespace}.{dto.Name}"} IS {$"'{dto.Comment}';"}")
+                .Write($"COMMENT ON {"TABLE"} {$"{dto.Namespace}.{dto.Name}"} IS '{LITERAL(dto.Comment)}';")
                 .WriteLine();
         }
 
         var columnComments = dto.Properties
             .WhereHasValue(x => x.Comment)
             .RenderPadded(
-                x => $"COMMENT ON {"COLUMN"} {$"{dto.Namespace}.{dto.Name}.{x.Name}"} IS {$"'{x.Comment}';"}",
+                x => $"COMMENT ON {"COLUMN"} {$"{dto.Namespace}.{dto.Name}.{x.Name}"} IS '{LITERAL(x.Comment)}';",
                 paddingGroupName: "comments");
 
         template.Write(columnComments);

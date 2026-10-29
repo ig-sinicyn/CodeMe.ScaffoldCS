@@ -4,11 +4,7 @@ Scaffolding framework inspired by CodegenCS
 # Template issues
 
 Have a good scenarios:
-* Consider to split Template and advanced rendering logic. The goal is to have api that allows to add third-party rendering customisation
-* Add api for column-level padding. Func to PaddedTemplatePart?
-  * Need both options.
 * Split template / text writer options
-* Support for spans for template part
 
 Waits for grooming:
 * Value handling customizations. Interceptors?
