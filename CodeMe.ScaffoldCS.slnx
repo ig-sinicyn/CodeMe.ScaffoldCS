@@ -12,6 +12,7 @@
     <Project Path="examples/SampleTemplates/SampleTemplates.csproj" Id="a516a92e-137b-479f-94ca-2546021160cd" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="CodeMe.ScaffoldCS.Tool/CodeMe.ScaffoldCS.Tool.csproj" Id="0583f785-cd4d-4fdd-822d-c4c60c9372c1" />
     <Project Path="src/CodeMe.ScaffoldCS.Metadata/CodeMe.ScaffoldCS.Metadata.csproj" />
     <Project Path="src/CodeMe.ScaffoldCS.Templates/CodeMe.ScaffoldCS.Templates.csproj" />
     <Project Path="src/CodeMe.ScaffoldCS/CodeMe.ScaffoldCS.csproj" />

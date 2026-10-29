@@ -7,11 +7,17 @@ namespace CodeMe.ScaffoldCS.Hosting;
 
 public static class ScaffoldHost
 {
+    public static async Task<int> RunAsync(
+        string[] args,
+        Type startup,
+        CancellationToken cancellation = default) =>
+        await RunAsync(startup, new ScaffoldHostOptions(args), cancellation);
+
     public static async Task<int> RunAsync<TStartup>(
         string[] args,
         CancellationToken cancellation = default)
         where TStartup : IScaffoldStartup =>
-        await RunAsync(typeof(TStartup), new ScaffoldHostOptions(args), cancellation);
+        await RunAsync<TStartup>(new ScaffoldHostOptions(args), cancellation);
 
     public static async Task<int> RunAsync<TStartup>(
         ScaffoldHostOptions options,
